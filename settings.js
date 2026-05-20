@@ -693,7 +693,15 @@ function renderCustomTierBuilder() {
         <div class="adv-item"><label>Min Yükseklik — ${t.bodyMinHeight || 48}px</label><input type="range" min="20" max="300" value="${t.bodyMinHeight || 48}" oninput="updateTierField(${i},'bodyMinHeight',parseFloat(this.value));this.previousElementSibling.textContent='Min Yükseklik — '+this.value+'px'"></div>
         <div class="adv-item"><label>Etiket Boşluğu — ${t.tagGap || 5}px</label><input type="range" min="0" max="24" value="${t.tagGap || 5}" oninput="updateTierField(${i},'tagGap',parseFloat(this.value));this.previousElementSibling.textContent='Etiket Boşluğu — '+this.value+'px'"></div>
         <div class="adv-item"><label>Çizgi Şeffaflığı — ${t.borderOpacity !== undefined ? t.borderOpacity : 100}%</label><input type="range" min="0" max="100" value="${t.borderOpacity !== undefined ? t.borderOpacity : 100}" oninput="updateTierField(${i},'borderOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Çizgi Şeffaflığı — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Gövde Şekli</label><select onchange="updateTierField(${i},'bodyShape',this.value)"><option value="0px" ${(t.bodyShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.bodyShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.bodyShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="0px 0px 8px 8px" ${t.bodyShape === '0px 0px 8px 8px' ? 'selected' : ''}>Alt Yuvarlak</option></select></div>
+        <div class="adv-item"><label>Gövde Şekli</label><select onchange="updateTierField(${i},'bodyShape',this.value)">
+          <option value="0px" ${(t.bodyShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option>
+          <option value="0px 0px 4px 4px" ${t.bodyShape === '0px 0px 4px 4px' ? 'selected' : ''}>Alt Yuvarlak (4px)</option>
+          <option value="0px 0px 12px 12px" ${t.bodyShape === '0px 0px 12px 12px' ? 'selected' : ''}>Alt Yuvarlak (12px)</option>
+          <option value="4px" ${t.bodyShape === '4px' ? 'selected' : ''}>Tam Yuvarlak (4px)</option>
+          <option value="12px" ${t.bodyShape === '12px' ? 'selected' : ''}>Tam Yuvarlak (12px)</option>
+          <option value="24px" ${t.bodyShape === '24px' ? 'selected' : ''}>Çok Yuvarlak (24px)</option>
+          <option value="50px" ${t.bodyShape === '50px' ? 'selected' : ''}>Hap Şekli</option>
+        </select></div>
         <div class="adv-item"><label>Etiket Şekli</label><select onchange="updateTierField(${i},'tagShape',this.value)"><option value="2px" ${(t.tagShape || '2px') === '2px' ? 'selected' : ''}>Varsayılan</option><option value="0px" ${t.tagShape === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.tagShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.tagShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="50px" ${t.tagShape === '50px' ? 'selected' : ''}>Hap</option><option value="50%" ${t.tagShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
         <!-- COMPACT MOD -->
         <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
@@ -844,8 +852,12 @@ function exportJSON() {
   const blob  = new Blob([data], { type: 'application/json' });
   const url   = URL.createObjectURL(blob);
   const a     = document.createElement('a');
+  a.style.display = 'none';
   a.href = url; a.download = 'anime-liste-yedek-' + new Date().toISOString().slice(0, 10) + '.json';
-  a.click(); URL.revokeObjectURL(url);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
   showInfo('Export Tamam', 'Tüm listeler JSON olarak indirildi.');
 }
 
@@ -886,23 +898,18 @@ function exportReadable() {
     lines.push('Başlık: ' + (e.title || ''));
     lines.push('İzlenme: ' + (e.watched || ''));
     lines.push('Puan: ' + Number(e.score).toFixed(1));
-    if (e.tagColor) lines.push('Renk: ' + e.tagColor);
     if (e.img) lines.push('Görsel URL: ' + e.img);
-    lines.push('Açıklama: ' + (e.desc || '').replace(/\n/g, ' '));
-    // Custom fields
-    if (l.customFields && e.customFieldValues) {
-      l.customFields.forEach(cf => {
-        const val = e.customFieldValues[cf.id];
-        if (val !== undefined && val !== '') lines.push(cf.label + ': ' + val);
-      });
-    }
     lines.push('---'); lines.push('');
   });
   const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
+  a.style.display = 'none';
   a.href = url; a.download = l.name.replace(/\s+/g, '-').toLowerCase() + '-' + new Date().toISOString().slice(0, 10) + '.txt';
-  a.click(); URL.revokeObjectURL(url);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
   showInfo('Export Tamam', l.entries.length + ' anime düzenli olarak indirildi.');
 }
 
@@ -918,9 +925,9 @@ function importReadable(event) {
       const name = nameMatch[1].trim();
       const get = key => { const re = new RegExp('^' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\s*(.+)$', 'm'); const m = block.match(re); return m ? m[1].trim() : ''; };
       const title   = get('Başlık'), watched = get('İzlenme'), scoreRaw = get('Puan');
-      const score   = parseFloat(scoreRaw), color = get('Renk'), imgUrl = get('Görsel URL'), desc = get('Açıklama');
-      if (!name || !title || !watched || isNaN(score) || !desc) return;
-      entries.push({ id: genId('imp'), name, title, watched, score: Math.min(5, Math.max(0, Math.round(score * 10) / 10)), desc, tagColor: color || null, img: imgUrl || null });
+      const score   = parseFloat(scoreRaw), imgUrl = get('Görsel URL');
+      if (!name || !title || !watched || isNaN(score)) return;
+      entries.push({ id: genId('imp'), name, title, watched, score: Math.min(5, Math.max(0, Math.round(score * 10) / 10)), desc: '', tagColor: null, img: imgUrl || null });
     });
     if (!entries.length) { showInfo('Import Hata', 'Geçerli entry bulunamadı. Format doğru mu?'); return; }
     const l = getList(AppState.settingsListId); if (!l) { showInfo('Hata', 'Hedef liste bulunamadı.'); return; }

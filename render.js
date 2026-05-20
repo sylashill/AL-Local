@@ -364,7 +364,7 @@ function renderTierPage(rebuildSearchBar = true) {
       const bodyShape  = t.bodyShape      || '0px';
       const bodyMinH   = t.bodyMinHeight  !== undefined ? t.bodyMinHeight : 48;
       const tagGapVal  = t.tagGap         !== undefined ? t.tagGap        : 5;
-      body.style.borderRadius = `0 0 ${bodyShape} ${bodyShape}`;
+      body.style.borderRadius = bodyShape;
       body.style.minHeight    = bodyMinH + 'px';
       body.style.gap          = tagGapVal + 'px';
 

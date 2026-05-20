@@ -100,10 +100,13 @@ function exportListTemplate(listId) {
   };
   const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
+  const a = document.createElement('a');
+  a.style.display = 'none';
   a.href = url;
   a.download = l.name.replace(/\s+/g, '-').toLowerCase() + '-sablon.json';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showInfo('Şablon İndirildi', '"' + l.name + '" şablonu kaydedildi. Başka bir listeye uygulayabilirsin.');
 }
