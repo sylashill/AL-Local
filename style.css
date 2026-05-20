@@ -9,11 +9,13 @@
   --text: #ddddf5; --muted: #5555a0; --accent: #e040fb;
   --nav-opacity: 0.9; --card-opacity: 1; --tag-opacity: 1; --surface-opacity: 1;
   --modal-opacity: 1; --border-opacity: 1; --ui-saturation: 100%; --ui-brightness: 100%;
+  --base-font-size: 14px;
 }
 
 body {
   background-color: var(--bg); color: var(--text);
-  font-family: 'Inconsolata', monospace; min-height: 100vh; overflow-x: hidden;
+  font-family: 'Inconsolata', monospace; font-size: var(--base-font-size);
+  min-height: 100vh; overflow-x: hidden;
   padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   filter: saturate(var(--ui-saturation)) brightness(var(--ui-brightness));
 }

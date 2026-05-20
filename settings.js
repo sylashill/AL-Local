@@ -111,10 +111,27 @@ function buildSettingsDynamicContent() {
       <!-- Font -->
       <div style="margin-bottom:1rem;">
         <div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;">Font</div>
-        <select id="font-select" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.4rem 0.5rem;border-radius:2px;outline:none;cursor:pointer;" onchange="applyFontSetting()">
-          ${GOOGLE_FONTS.map(f => `<option value="${f}" style="font-family:'${f}', sans-serif;">${f}</option>`).join('')}
-        </select>
+        <div style="position:relative;margin-bottom:0.4rem;">
+          <input type="text" id="font-search" placeholder="Font ara… (örn: Mono, Pixel)" autocomplete="off"
+            style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.4rem 0.5rem;border-radius:2px 2px 0 0;outline:none;box-sizing:border-box;"
+            oninput="filterFontList(this.value)">
+          <select id="font-select" size="6"
+            style="width:100%;background:var(--card);border:1px solid var(--border);border-top:none;color:var(--text);font-family:inherit;font-size:0.72rem;padding:0.2rem 0;border-radius:0 0 2px 2px;outline:none;cursor:pointer;display:block;"
+            onchange="applyFontSetting()">
+            ${GOOGLE_FONTS.map(f => `<option value="${f}">${f}</option>`).join('')}
+          </select>
+        </div>
         <div class="font-preview" id="font-preview">Anime listesi — サンプルテキスト — 0123456789</div>
+      </div>
+
+      <!-- Font Boyutu -->
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;">Font Boyutu</div>
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <input type="range" id="font-size-range" min="10" max="22" step="1" value="14"
+            style="flex:1;" oninput="applyFontSizeSetting(this.value)">
+          <span id="vd-fontsize" style="font-size:0.65rem;color:var(--muted);min-width:28px;text-align:right;">14px</span>
+        </div>
       </div>
 
       <!-- Renkler -->
@@ -273,7 +290,11 @@ function loadSettingsUI(listId) {
   if (briEl) { briEl.value = s['ui-bri'] || 100; document.getElementById('vd-bri').textContent = '%' + briEl.value; }
   const bgOpEl = document.getElementById('bg-opacity');
   if (bgOpEl) { bgOpEl.value = s.bgOpacity || 18; document.getElementById('vd-bgop').textContent = '%' + bgOpEl.value; }
-  const fontSel = document.getElementById('font-select'); if (fontSel) fontSel.value = s.font || 'Inconsolata';
+  const fontSel = document.getElementById('font-select'); if (fontSel) { fontSel.value = s.font || 'Inconsolata'; }
+  const fontSearchEl = document.getElementById('font-search'); if (fontSearchEl) fontSearchEl.value = '';
+  filterFontList('');
+  const fontSizeEl = document.getElementById('font-size-range');
+  if (fontSizeEl) { fontSizeEl.value = s.fontSize || 14; const vd = document.getElementById('vd-fontsize'); if (vd) vd.textContent = fontSizeEl.value + 'px'; }
   const bgUrlInp = document.getElementById('bg-img-url'); if (bgUrlInp) bgUrlInp.value = s.bgImg || '';
   updateBgDropPreview(s.bgImg);
   const tierGapEl = document.getElementById('tier-gap');
@@ -299,8 +320,9 @@ function applyAllSettingsToDOM(s) {
   r.setProperty('--ui-brightness',   (s['ui-bri'] || 100) + '%');
   const font = s.font || 'Inconsolata';
   loadGoogleFont(font);
-  document.body.style.fontFamily = `'${font}', sans-serif`;
-  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}', sans-serif`;
+  document.body.style.fontFamily = `'${font}',monospace`;
+  document.documentElement.style.setProperty('--base-font-size', (s.fontSize || 14) + 'px');
+  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}',monospace`;
   const bgLayer = document.getElementById('bg-layer');
   bgLayer.style.backgroundImage = s.bgImg ? `url("${s.bgImg}")` : 'none';
   bgLayer.style.opacity = (s.bgOpacity || 18) / 100;
@@ -346,9 +368,30 @@ function applyFontSetting() {
   const fontSel = document.getElementById('font-select'); if (!fontSel) return;
   const font = fontSel.value;
   loadGoogleFont(font);
-  document.body.style.fontFamily = `'${font}', sans-serif`;
-  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}', sans-serif`;
+  document.body.style.fontFamily = `'${font}',monospace`;
+  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}',monospace`;
   saveSetting('font', font);
+}
+
+function filterFontList(query) {
+  const sel = document.getElementById('font-select'); if (!sel) return;
+  const q = query.trim().toLowerCase();
+  Array.from(sel.options).forEach(opt => {
+    opt.style.display = (!q || opt.value.toLowerCase().includes(q)) ? '' : 'none';
+  });
+  // Eğer mevcut seçili gizlendiyse ilk görünür opsiyona geç
+  if (sel.options[sel.selectedIndex] && sel.options[sel.selectedIndex].style.display === 'none') {
+    const first = Array.from(sel.options).find(o => o.style.display !== 'none');
+    if (first) { sel.value = first.value; applyFontSetting(); }
+  }
+}
+
+function applyFontSizeSetting(value) {
+  const v = parseInt(value);
+  const vd = document.getElementById('vd-fontsize'); if (vd) vd.textContent = v + 'px';
+  document.documentElement.style.setProperty('--base-font-size', v + 'px');
+  saveSetting('fontSize', v);
+  AppState._lastAppliedListId = null;
 }
 
 function loadGoogleFont(name) {
@@ -693,15 +736,32 @@ function renderCustomTierBuilder() {
         <div class="adv-item"><label>Min Yükseklik — ${t.bodyMinHeight || 48}px</label><input type="range" min="20" max="300" value="${t.bodyMinHeight || 48}" oninput="updateTierField(${i},'bodyMinHeight',parseFloat(this.value));this.previousElementSibling.textContent='Min Yükseklik — '+this.value+'px'"></div>
         <div class="adv-item"><label>Etiket Boşluğu — ${t.tagGap || 5}px</label><input type="range" min="0" max="24" value="${t.tagGap || 5}" oninput="updateTierField(${i},'tagGap',parseFloat(this.value));this.previousElementSibling.textContent='Etiket Boşluğu — '+this.value+'px'"></div>
         <div class="adv-item"><label>Çizgi Şeffaflığı — ${t.borderOpacity !== undefined ? t.borderOpacity : 100}%</label><input type="range" min="0" max="100" value="${t.borderOpacity !== undefined ? t.borderOpacity : 100}" oninput="updateTierField(${i},'borderOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Çizgi Şeffaflığı — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Gövde Şekli</label><select onchange="updateTierField(${i},'bodyShape',this.value)">
-          <option value="0px" ${(t.bodyShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option>
-          <option value="0px 0px 4px 4px" ${t.bodyShape === '0px 0px 4px 4px' ? 'selected' : ''}>Alt Yuvarlak (4px)</option>
-          <option value="0px 0px 12px 12px" ${t.bodyShape === '0px 0px 12px 12px' ? 'selected' : ''}>Alt Yuvarlak (12px)</option>
-          <option value="4px" ${t.bodyShape === '4px' ? 'selected' : ''}>Tam Yuvarlak (4px)</option>
-          <option value="12px" ${t.bodyShape === '12px' ? 'selected' : ''}>Tam Yuvarlak (12px)</option>
-          <option value="24px" ${t.bodyShape === '24px' ? 'selected' : ''}>Çok Yuvarlak (24px)</option>
-          <option value="50px" ${t.bodyShape === '50px' ? 'selected' : ''}>Hap Şekli</option>
-        </select></div>
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.6rem;margin-top:0.2rem;">
+          <label style="margin-bottom:0.4rem;display:block;">Gövde Şekli (border-radius)</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem 0.5rem;margin-bottom:0.4rem;">
+            ${['Sol Üst','Sağ Üst','Sağ Alt','Sol Alt'].map((lbl, ci) => {
+              const corners = (t.bodyShape || '0px 0px 0px 0px').split(/\s+/);
+              while (corners.length < 4) corners.push('0px');
+              const raw = parseInt(corners[ci]) || 0;
+              return `<div style="display:flex;flex-direction:column;gap:0.15rem;">
+                <span style="font-size:0.45rem;color:var(--muted);text-transform:uppercase;">${lbl}</span>
+                <div style="display:flex;align-items:center;gap:0.25rem;">
+                  <input type="range" min="0" max="50" value="${raw}" style="flex:1;"
+                    oninput="updateBodyShapeCorner(${i},${ci},this.value);this.nextElementSibling.textContent=this.value+'px'">
+                  <span style="font-size:0.5rem;color:var(--muted);min-width:26px;">${raw}px</span>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.2rem;">
+            <button onclick="setBodyShapePreset(${i},'0px 0px 0px 0px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Keskin</button>
+            <button onclick="setBodyShapePreset(${i},'4px 4px 4px 4px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Hafif</button>
+            <button onclick="setBodyShapePreset(${i},'8px 8px 8px 8px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Yuvarlak</button>
+            <button onclick="setBodyShapePreset(${i},'0px 0px 12px 12px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Alt Yuvarlak</button>
+            <button onclick="setBodyShapePreset(${i},'12px 12px 0px 0px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Üst Yuvarlak</button>
+            <button onclick="setBodyShapePreset(${i},'20px 20px 20px 20px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Çok Yuvarlak</button>
+          </div>
+        </div>
         <div class="adv-item"><label>Etiket Şekli</label><select onchange="updateTierField(${i},'tagShape',this.value)"><option value="2px" ${(t.tagShape || '2px') === '2px' ? 'selected' : ''}>Varsayılan</option><option value="0px" ${t.tagShape === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.tagShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.tagShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="50px" ${t.tagShape === '50px' ? 'selected' : ''}>Hap</option><option value="50%" ${t.tagShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
         <!-- COMPACT MOD -->
         <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
@@ -793,6 +853,22 @@ function updateTierField(i, key, val) {
   l.customTiers[i][key] = val; saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+function updateBodyShapeCorner(tierIdx, cornerIdx, value) {
+  const l = getList(AppState.settingsListId); if (!l) return;
+  const t = l.customTiers[tierIdx]; if (!t) return;
+  const corners = (t.bodyShape || '0px 0px 0px 0px').split(/\s+/);
+  while (corners.length < 4) corners.push('0px');
+  corners[cornerIdx] = parseInt(value) + 'px';
+  t.bodyShape = corners.join(' ');
+  saveData(); renderCustomTierBuilder(); renderTierPage();
+}
+
+function setBodyShapePreset(tierIdx, value) {
+  const l = getList(AppState.settingsListId); if (!l) return;
+  if (l.customTiers[tierIdx]) l.customTiers[tierIdx].bodyShape = value;
+  saveData(); renderCustomTierBuilder(); renderTierPage();
+}
+
 function moveTier(i, dir) {
   const l = getList(AppState.settingsListId); if (!l) return;
   const tiers = l.customTiers, j = i + dir;
@@ -852,17 +928,15 @@ function exportJSON() {
   const blob  = new Blob([data], { type: 'application/json' });
   const url   = URL.createObjectURL(blob);
   const a     = document.createElement('a');
-  a.style.display = 'none';
   a.href = url; a.download = 'anime-liste-yedek-' + new Date().toISOString().slice(0, 10) + '.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   showInfo('Export Tamam', 'Tüm listeler JSON olarak indirildi.');
 }
 
 function importJSON(event) {
   const file = event.target.files[0]; if (!file) return;
+  const inputEl = event.target;
   showConfirm('JSON Yükle', 'Mevcut tüm veriler silinecek. Önce yedek aldın mı?', () => {
     const reader = new FileReader();
     reader.onload = ev => {
@@ -886,8 +960,8 @@ function importJSON(event) {
       } catch (e) { showInfo('Hata', 'Dosya okunamadı: ' + e.message); }
     };
     reader.readAsText(file);
+    inputEl.value = '';
   });
-  event.target.value = '';
 }
 
 function exportReadable() {
@@ -898,18 +972,24 @@ function exportReadable() {
     lines.push('Başlık: ' + (e.title || ''));
     lines.push('İzlenme: ' + (e.watched || ''));
     lines.push('Puan: ' + Number(e.score).toFixed(1));
+    if (e.tagColor) lines.push('Renk: ' + e.tagColor);
     if (e.img) lines.push('Görsel URL: ' + e.img);
+    lines.push('Açıklama: ' + (e.desc || '').replace(/\n/g, ' '));
+    // Custom fields
+    if (l.customFields && e.customFieldValues) {
+      l.customFields.forEach(cf => {
+        const val = e.customFieldValues[cf.id];
+        if (val !== undefined && val !== '') lines.push(cf.label + ': ' + val);
+      });
+    }
     lines.push('---'); lines.push('');
   });
   const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.style.display = 'none';
   a.href = url; a.download = l.name.replace(/\s+/g, '-').toLowerCase() + '-' + new Date().toISOString().slice(0, 10) + '.txt';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   showInfo('Export Tamam', l.entries.length + ' anime düzenli olarak indirildi.');
 }
 
@@ -925,9 +1005,9 @@ function importReadable(event) {
       const name = nameMatch[1].trim();
       const get = key => { const re = new RegExp('^' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\s*(.+)$', 'm'); const m = block.match(re); return m ? m[1].trim() : ''; };
       const title   = get('Başlık'), watched = get('İzlenme'), scoreRaw = get('Puan');
-      const score   = parseFloat(scoreRaw), imgUrl = get('Görsel URL');
-      if (!name || !title || !watched || isNaN(score)) return;
-      entries.push({ id: genId('imp'), name, title, watched, score: Math.min(5, Math.max(0, Math.round(score * 10) / 10)), desc: '', tagColor: null, img: imgUrl || null });
+      const score   = parseFloat(scoreRaw), color = get('Renk'), imgUrl = get('Görsel URL'), desc = get('Açıklama');
+      if (!name || !title || !watched || isNaN(score) || !desc) return;
+      entries.push({ id: genId('imp'), name, title, watched, score: Math.min(5, Math.max(0, Math.round(score * 10) / 10)), desc, tagColor: color || null, img: imgUrl || null });
     });
     if (!entries.length) { showInfo('Import Hata', 'Geçerli entry bulunamadı. Format doğru mu?'); return; }
     const l = getList(AppState.settingsListId); if (!l) { showInfo('Hata', 'Hedef liste bulunamadı.'); return; }

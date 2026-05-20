@@ -5,6 +5,7 @@
 
 const DEFAULT_SETTINGS = {
   font: 'Inconsolata',
+  fontSize: 14,   // px — temel yazı boyutu
   'col-bg': '#08080f', 'col-surface': '#0e0e1a', 'col-card': '#131320',
   'col-border': '#1f1f35', 'col-text': '#ddddf5', 'col-accent': '#e040fb',
   'op-nav': 90, 'op-modal': 100, 'op-card': 100, 'op-surface': 100,
@@ -24,25 +25,18 @@ const STAR_TIERS_BASE = [
 const STAR_TIERS = STAR_TIERS_BASE; // alias
 
 const GOOGLE_FONTS = [
-  // Sans Serif
-  'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Poppins', 'Source Sans Pro', 'Oswald', 'Raleway', 'Ubuntu', 
-  'Nunito', 'Quicksand', 'Work Sans', 'Kanit', 'Rubik', 'Prompt', 'Muli', 'Titillium Web', 'Barlow', 'Heebo',
-  // Serif
-  'Merriweather', 'Playfair Display', 'Lora', 'PT Serif', 'Libre Baskerville', 'Crimson Text', 'Cormorant Garamond', 'Noto Serif', 'Arvo', 'EB Garamond',
-  // Monospace
-  'Inconsolata', 'Fira Code', 'Source Code Pro', 'JetBrains Mono', 'Space Mono', 'Roboto Mono', 'Ubuntu Mono', 'IBM Plex Mono', 'Courier Prime', 'Share Tech Mono',
-  // Display & Sci-Fi
-  'Orbitron', 'Exo 2', 'Audiowide', 'Russo One', 'Rajdhani', 'Oxanium', 'Chakra Petch', 'Michroma', 'Electrolize', 'Aldrich',
-  'Space Grotesk', 'Syncopate', 'Staatliches', 'Bebas Neue', 'Archivo Black', 'Righteous', 'Cinzel', 'Cinzel Decorative',
-  // Handwritten & Decorative
-  'Pacifico', 'Dancing Script', 'Caveat', 'Permanent Marker', 'Satisfy', 'Courgette', 'Great Vibes', 'Sacramento', 'Yellowtail', 'Shadows Into Light',
-  'Comfortaa', 'Varela Round', 'Fredoka One', 'Patrick Hand', 'Amatic SC', 'Indie Flower', 'Gloria Hallelujah', 'Special Elite', 'Press Start 2P', 'Silkscreen',
-  // International & Japanese
-  'Noto Sans JP', 'Noto Serif JP', 'Zen Kaku Gothic New', 'BIZ UDGothic', 'Sawarabi Gothic', 'M PLUS 1p', 'Kosugi Maru', 'Zen Kurenaido', 'Stick', 'Kaisei Tokumin',
-  // More Modern & Clean
-  'Manrope', 'Be Vietnam Pro', 'Outfit', 'Plus Jakarta Sans', 'Sora', 'Lexend', 'Urbanist', 'Public Sans', 'Sen', 'Jost',
-  // More Display
-  'Abril Fatface', 'Alfa Slab One', 'Bungee', 'Carter One', 'Fascinate', 'Luckiest Guy', 'Monoton', 'Shojumaru', 'Unica One', 'Vampiro One'
+  'Inconsolata','Share Tech Mono','Major Mono Display','Syne Mono','VT323','Courier Prime',
+  'Source Code Pro','Fira Code','JetBrains Mono','Space Mono','Roboto Mono','Ubuntu Mono',
+  'IBM Plex Mono','Cutive Mono','Nova Mono','Anonymous Pro','Overpass Mono','DM Mono',
+  'Zen Kaku Gothic New','Orbitron','Rajdhani','Exo 2','Oxanium','Chakra Petch',
+  'Audiowide','Electrolize','Michroma','Aldrich','Russo One','Exo','Play',
+  'Titillium Web','Barlow','Barlow Condensed','Teko','Saira','Saira Condensed',
+  'Cinzel','Cinzel Decorative','Press Start 2P','Silkscreen','Special Elite',
+  'Permanent Marker','Bebas Neue','Black Han Sans','Raleway','Righteous',
+  'Poiret One','Comfortaa','Nunito','Quicksand','Varela Round',
+  'Noto Sans JP','Noto Serif JP','BIZ UDGothic','Zen Kurenaido','Stick',
+  'Playfair Display','Cormorant Garamond','Libre Baskerville','Crimson Text',
+  'IM Fell English','Cardo',
 ];
 
 // Hızlı tema preset'leri

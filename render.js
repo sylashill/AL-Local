@@ -364,6 +364,8 @@ function renderTierPage(rebuildSearchBar = true) {
       const bodyShape  = t.bodyShape      || '0px';
       const bodyMinH   = t.bodyMinHeight  !== undefined ? t.bodyMinHeight : 48;
       const tagGapVal  = t.tagGap         !== undefined ? t.tagGap        : 5;
+      // bodyShape değeri "TL TR BR BL" formatında 4 değer içerebilir
+      // CSS border-radius: TL TR BR BL → gövde için sadece alt iki köşeyi değil tümünü kullan
       body.style.borderRadius = bodyShape;
       body.style.minHeight    = bodyMinH + 'px';
       body.style.gap          = tagGapVal + 'px';
