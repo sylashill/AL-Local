@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Anime Liste</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;600;700&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="bg-layer"></div>
+
+<!-- ════════════════════════════════════════
+     TOP NAV
+════════════════════════════════════════ -->
+<nav class="top-nav" id="top-nav"></nav>
+
+<!-- ════════════════════════════════════════
+     PAGE: LİSTE
+════════════════════════════════════════ -->
+<div class="page active" id="page-liste">
+
+  <!-- View mode -->
+  <div class="view-mode-wrap">
+    <button id="btn-text" class="view-mode-btn active" onclick="setView('text')">Metin</button>
+    <button id="btn-img"  class="view-mode-btn"        onclick="setView('img')">Görsel</button>
+  </div>
+
+  <!-- Arama + Sıralama barı buraya dinamik olarak eklenir (render.js) -->
+
+  <!-- Anime ekle butonu -->
+  <button class="add-btn" onclick="openForm(null)">
+    <span style="font-size:1rem;line-height:1">＋</span> ANİME EKLE
+  </button>
+
+  <!-- Tier listesi -->
+  <div class="tiers" id="tiers-container"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PAGE: SETTINGS
+════════════════════════════════════════ -->
+<div class="page" id="page-settings">
+
+  <!-- Kaydet/İptal barı (sticky) -->
+  <div id="settings-save-bar" style="display:none;">
+    <span id="settings-save-bar-label">⚠ Kaydedilmemiş değişiklikler</span>
+    <button
+      onclick="saveSettingsNow()"
+      style="background:var(--accent);color:#000;border:none;font-family:inherit;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.38rem 0.9rem;border-radius:2px;cursor:pointer;">
+      💾 Kaydet
+    </button>
+    <button
+      onclick="cancelSettingsChanges()"
+      style="background:transparent;border:1px solid var(--border);color:var(--muted);font-family:inherit;font-size:0.65rem;letter-spacing:0.08em;padding:0.38rem 0.8rem;border-radius:2px;cursor:pointer;">
+      ✕ İptal
+    </button>
+  </div>
+
+  <div class="settings-page-wrap">
+
+    <!-- ── LİSTE SEÇİMİ ── -->
+    <div class="settings-section">
+      <h2>Hangi Liste İçin Ayar Yapılıyor?</h2>
+      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.9rem;line-height:1.7;">
+        Ayarlar liste bazındadır. Düzenlemek istediğin listeyi seç.
+      </p>
+      <div id="settings-list-btns" style="display:flex;flex-direction:column;gap:0.4rem;max-width:420px;"></div>
+    </div>
+
+    <!-- ── LİSTE YÖNETİMİ ── -->
+    <div class="settings-section" id="s-list-mgmt" style="display:none;">
+      <h2>Liste Yönetimi</h2>
+      <div id="list-mgmt-panel"></div>
+    </div>
+
+    <hr class="settings-divider" id="settings-data-divider" style="display:none;">
+
+    <!-- ── DİNAMİK AYAR İÇERİĞİ (görünüm, özel katmanlar, özel alanlar, şablon, reset) ── -->
+    <div id="settings-dynamic-content" style="display:none;"></div>
+
+    <hr class="settings-divider" id="settings-readable-divider" style="display:none;">
+
+    <!-- ── IMPORT / EXPORT ── -->
+    <div class="settings-section" id="settings-io-section" style="display:none;">
+      <h2>Veri Yönetimi</h2>
+      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.9rem;line-height:1.7;">
+        Tüm listeleri JSON olarak yedekle veya geri yükle.
+      </p>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.5rem;">
+        <button class="btn-io" onclick="exportJSON()">⬇ JSON İndir</button>
+        <label class="btn-io btn-io-import">
+          ⬆ JSON Yükle
+          <input type="file" accept=".json" style="display:none" onchange="importJSON(event)">
+        </label>
+      </div>
+      <button onclick="factoryReset()"
+        style="background:transparent;border:1px solid #ff444460;color:#ff6060;font-family:inherit;font-size:0.62rem;letter-spacing:0.08em;padding:0.38rem 0.8rem;border-radius:2px;cursor:pointer;transition:background 0.2s;"
+        onmouseover="this.style.background='#ff444418'" onmouseout="this.style.background='transparent'">
+        ⚠ Tüm Verileri Sıfırla
+      </button>
+    </div>
+
+    <!-- ── DÜZENLİ EXPORT / IMPORT ── -->
+    <div class="settings-section" id="settings-readable-section" style="display:none;">
+      <h2>Düzenli Metin Export / Import</h2>
+      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.9rem;line-height:1.7;">
+        Seçili listeyi okunabilir .txt formatında indir veya dışarıdan yükle.
+      </p>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+        <button class="btn-io" onclick="exportReadable()">⬇ .txt İndir</button>
+        <label class="btn-io btn-io-import">
+          ⬆ .txt Yükle
+          <input type="file" accept=".txt" style="display:none" onchange="importReadable(event)">
+        </label>
+      </div>
+    </div>
+
+  </div><!-- /settings-page-wrap -->
+</div><!-- /page-settings -->
+
+<!-- ════════════════════════════════════════
+     BOTTOM BAR
+════════════════════════════════════════ -->
+<nav class="bottom-bar">
+  <button class="bar-btn active" id="bar-btn-list" onclick="switchPage('liste')">
+    <span style="font-size:1.1rem;">☰</span>
+    <span>Liste</span>
+  </button>
+  <button class="bar-btn" onclick="openForm(null)">
+    <span style="font-size:1.3rem; line-height:1;">＋</span>
+    <span>Ekle</span>
+  </button>
+  <button class="bar-btn" id="bar-btn-settings" onclick="switchPage('settings')">
+    <span style="font-size:1.1rem;">⚙</span>
+    <span>Ayarlar</span>
+  </button>
+</nav>
+
+<!-- ════════════════════════════════════════
+     ENTRY FORM OVERLAY
+════════════════════════════════════════ -->
+<div class="overlay" id="form-overlay">
+  <div class="modal-box">
+    <div class="modal-head" id="form-title">＋ YENİ ANİME</div>
+    <div class="modal-body">
+
+      <div class="paste-notice" id="paste-notice">📋 Entry yapıştırıldı — bilgileri kontrol et!</div>
+
+      <!-- İsim -->
+      <div class="field">
+        <label>Anime İsmi *</label>
+        <input type="text" id="f-name" placeholder="Steins;Gate" autocomplete="off">
+        <div class="error-msg" id="err-name">Bu alan zorunlu.</div>
+      </div>
+
+      <!-- Başlık (Türkçe/Alternatif) -->
+      <div class="field">
+        <label>Japonca / Alternatif Başlık *</label>
+        <input type="text" id="f-title" placeholder="シュタインズ・ゲート" autocomplete="off">
+        <div class="error-msg" id="err-title">Bu alan zorunlu.</div>
+      </div>
+
+      <!-- İzlenme durumu -->
+      <div class="field">
+        <label>İzlenme Durumu *</label>
+        <input type="text" id="f-watched" placeholder="Tamamlandı / Devam Ediyor" autocomplete="off">
+        <div class="error-msg" id="err-watched">Bu alan zorunlu.</div>
+      </div>
+
+      <!-- Puan -->
+      <div class="field">
+        <label>Puan * (0.0 – 5.0)</label>
+        <div class="score-row">
+          <input type="number" class="score-input" id="f-score"
+            min="0" max="5" step="0.1" placeholder="4.5"
+            oninput="onScoreInput()" onkeydown="onScoreKey(event)">
+          <div class="score-stepper">
+            <button onclick="stepScore(0.1)">▲</button>
+            <button onclick="stepScore(-0.1)">▼</button>
+          </div>
+          <div class="score-stars-preview" id="score-preview"></div>
+        </div>
+        <div class="error-msg" id="err-score">0.0 ile 5.0 arasında geçerli bir puan gir.</div>
+      </div>
+
+      <!-- Açıklama -->
+      <div class="field">
+        <label>Açıklama / Yorum *</label>
+        <textarea id="f-desc" placeholder="Kısa bir yorum…"></textarea>
+        <div class="error-msg" id="err-desc">Bu alan zorunlu.</div>
+      </div>
+
+      <!-- Görsel URL -->
+      <div class="field">
+        <label>Görsel URL</label>
+        <input type="url" id="f-img-url" placeholder="https://cdn.myanimelist.net/…"
+          oninput="updateFormImgPreview()" autocomplete="off">
+        <div class="img-drop" style="margin-top:0.5rem;">
+          <img class="img-preview" id="img-prev" src="" alt="" style="display:none;">
+          <p id="img-label">URL gir → önizleme görünür</p>
+        </div>
+        <div class="error-msg" id="err-img"></div>
+      </div>
+
+      <!-- Katman seçici -->
+      <div class="field" id="field-layers" style="display:none;">
+        <label>
+          Katman <span id="layers-required-mark">*</span>
+          <span id="layers-optional-label" style="font-size:0.55rem;font-weight:400;text-transform:none;letter-spacing:0;opacity:0.5">(isteğe bağlı)</span>
+        </label>
+        <button class="layers-toggle-btn" id="btn-layers-toggle" onclick="toggleLayersPicker()">
+          <span id="layers-btn-label" style="color:var(--muted)">Katman seç…</span>
+          <span style="font-size:0.6rem;color:var(--muted)">▼</span>
+        </button>
+        <div id="layers-picker"></div>
+        <div class="error-msg" id="err-layers">En az bir katman seçmelisin.</div>
+      </div>
+
+      <!-- Özel Alanlar (custom fields) -->
+      <div id="custom-fields-form-wrap"></div>
+
+      <!-- İleri Düzey: Etiket Rengi, Boyut, Doygunluk -->
+      <div style="margin-bottom: 0.8rem;">
+        <div class="entry-adv-toggle" onclick="toggleEntryAdvSettings()">
+          <span id="entry-adv-arrow">▶</span>
+          <span>Etiket Görünümü (gelişmiş)</span>
+        </div>
+        <div class="entry-adv-panel" id="entry-adv-panel" style="display:none;">
+          <!-- Tag Rengi -->
+          <div>
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem;">Etiket Rengi</div>
+            <div class="tag-color-row">
+              <input type="color" class="tag-color-input" id="f-tagcolor" value="#e040fb" oninput="onTagColorPick()">
+              <button class="btn-random-color" onclick="randomTagColor()">🎲 Rastgele</button>
+              <button class="tag-color-clear" onclick="clearTagColor()">✕ Temizle</button>
+            </div>
+            <div id="tag-color-swatches" style="margin-top:0.35rem;display:flex;align-items:center;gap:0.4rem;"></div>
+          </div>
+          <!-- Tag Doygunluk -->
+          <div>
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Etiket Doygunluğu — <span id="f-tagsat-val">100</span>%
+            </div>
+            <input type="range" id="f-tagsat" min="0" max="200" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-tagsat-val').textContent=this.value">
+          </div>
+          <!-- Tag Boyutu -->
+          <div>
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Etiket Boyutu — <span id="f-tagsize-val">0.65</span>rem
+            </div>
+            <input type="range" id="f-tagsize" min="0.4" max="1.2" step="0.05" value="0.65"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-tagsize-val').textContent=parseFloat(this.value).toFixed(2)">
+          </div>
+          <!-- Tag Şekli (override) -->
+          <div>
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Etiket Şekli (override)</div>
+            <select id="f-tagshape"
+              style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;cursor:pointer;">
+              <option value="">— Katman Varsayılanı —</option>
+              <option value="0px">Keskin</option>
+              <option value="2px">Hafif (2px)</option>
+              <option value="4px">Yuvarlak (4px)</option>
+              <option value="8px">Daha Yuvarlak (8px)</option>
+              <option value="50px">Hap</option>
+              <option value="50%">Tam Yuvarlak</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Butonlar -->
+      <div class="form-actions">
+        <button class="btn-primary" onclick="saveEntry()">Kaydet</button>
+        <button class="btn-ghost"   onclick="closeForm()">İptal</button>
+        <button class="btn-paste-entry" onclick="pasteEntry()">📋 Yapıştır</button>
+      </div>
+
+    </div><!-- /modal-body -->
+  </div><!-- /modal-box -->
+</div><!-- /form-overlay -->
+
+<!-- ════════════════════════════════════════
+     DETAIL MODAL OVERLAY
+════════════════════════════════════════ -->
+<div class="overlay" id="detail-overlay">
+  <div class="detail-modal">
+    <div id="d-img-wrap"></div>
+    <div class="detail-body">
+      <div class="detail-name" id="d-name"></div>
+      <div class="detail-stars-row" id="d-stars"></div>
+      <div class="detail-fl">
+        <div class="detail-fl-label">Japonca Başlık</div>
+        <div class="detail-fl-val" id="d-title"></div>
+      </div>
+      <div class="detail-fl">
+        <div class="detail-fl-label">İzlenme Durumu</div>
+        <div class="detail-fl-val">
+          <span class="watched-badge" id="d-watched"></span>
+        </div>
+      </div>
+      <div class="detail-fl">
+        <div class="detail-fl-label">Açıklama</div>
+        <div class="detail-fl-val" id="d-desc" style="white-space:pre-wrap;"></div>
+      </div>
+      <!-- Özel alanlar dinamik olarak buraya eklenir -->
+      <div id="d-custom-fields"></div>
+
+      <div class="detail-actions">
+        <button class="btn-edit"    onclick="editEntry()">✎ Düzenle</button>
+        <button class="btn-del"     onclick="deleteEntry()">✕ Sil</button>
+        <button class="btn-copy-d"  onclick="copyEntry()">⎘ Kopyala</button>
+        <button class="btn-close-d" onclick="closeDetail()">Kapat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CONFIRM / INFO OVERLAY
+════════════════════════════════════════ -->
+<div class="overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title"></h3>
+    <p  id="confirm-msg"></p>
+    <div class="confirm-actions">
+      <button id="confirm-yes" class="btn-primary" style="flex:0 0 auto;padding:0.45rem 1rem;">Evet</button>
+      <button class="btn-ghost" onclick="closeConfirm()">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════ -->
+<script src="storage.js"></script>
+<script src="utils.js"></script>
+<script src="render.js"></script>
+<script src="settings.js"></script>
+<script src="entries.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
