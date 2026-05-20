@@ -133,6 +133,7 @@ function buildSettingsDynamicContent() {
         <div class="setting-item full-col"><label>Etiket Şeffaflığı</label><input type="range" id="op-tag" min="10" max="100" value="100" oninput="applyOpacitySetting('tag',this.value)"><div class="val-disp" id="vd-tag">%100</div></div>
         <div class="setting-item full-col"><label>UI Doygunluğu</label><input type="range" id="ui-sat" min="0" max="150" value="100" oninput="applyOpacitySetting('sat',this.value)"><div class="val-disp" id="vd-sat">%100</div></div>
         <div class="setting-item full-col"><label>UI Parlaklığı</label><input type="range" id="ui-bri" min="20" max="150" value="100" oninput="applyOpacitySetting('bri',this.value)"><div class="val-disp" id="vd-bri">%100</div></div>
+        <div class="setting-item full-col"><label>Katmanlar Arası Boşluk</label><input type="range" id="tier-gap" min="0" max="48" value="8" oninput="applyTierGapSetting(this.value)"><div class="val-disp" id="vd-tiergap">8px</div></div>
       </div>
     </div>
 
@@ -275,6 +276,8 @@ function loadSettingsUI(listId) {
   const fontSel = document.getElementById('font-select'); if (fontSel) fontSel.value = s.font || 'Inconsolata';
   const bgUrlInp = document.getElementById('bg-img-url'); if (bgUrlInp) bgUrlInp.value = s.bgImg || '';
   updateBgDropPreview(s.bgImg);
+  const tierGapEl = document.getElementById('tier-gap');
+  if (tierGapEl) { tierGapEl.value = s.tierGap !== undefined ? s.tierGap : 8; const vd = document.getElementById('vd-tiergap'); if (vd) vd.textContent = tierGapEl.value + 'px'; }
   applyAllSettingsToDOM(s);
 }
 
@@ -301,6 +304,8 @@ function applyAllSettingsToDOM(s) {
   const bgLayer = document.getElementById('bg-layer');
   bgLayer.style.backgroundImage = s.bgImg ? `url("${s.bgImg}")` : 'none';
   bgLayer.style.opacity = (s.bgOpacity || 18) / 100;
+  const tc = document.getElementById('tiers-container');
+  if (tc) tc.style.gap = (s.tierGap !== undefined ? s.tierGap : 8) + 'px';
 }
 
 function saveSetting(key, value) {
@@ -326,6 +331,14 @@ function applyOpacitySetting(key, value) {
   const dispEl = document.getElementById(dispMap[key]); if (dispEl) dispEl.textContent = '%' + v;
   const sKey = (key === 'sat') ? 'ui-sat' : (key === 'bri') ? 'ui-bri' : 'op-' + key;
   saveSetting(sKey, v);
+  AppState._lastAppliedListId = null;
+}
+
+function applyTierGapSetting(value) {
+  const v = parseInt(value);
+  const dispEl = document.getElementById('vd-tiergap'); if (dispEl) dispEl.textContent = v + 'px';
+  const tc = document.getElementById('tiers-container'); if (tc) tc.style.gap = v + 'px';
+  saveSetting('tierGap', v);
   AppState._lastAppliedListId = null;
 }
 
@@ -545,6 +558,22 @@ function renderCustomTierBuilder() {
     if (t.borderOpacity === undefined)          t.borderOpacity = 100;
     if (t.headerMinWidth === undefined)         t.headerMinWidth = 0;
     if (t.hidden === undefined)                 t.hidden = false;  // YENİ
+    // Yeni özellikler migration
+    if (t.headerGradientEnabled === undefined)  t.headerGradientEnabled = false;
+    if (t.headerGradientColor1 === undefined)   t.headerGradientColor1 = '#7c3aed';
+    if (t.headerGradientColor2 === undefined)   t.headerGradientColor2 = '#2563eb';
+    if (t.headerGradientAngle === undefined)    t.headerGradientAngle = 135;
+    if (t.headerCountEnabled === undefined)     t.headerCountEnabled = false;
+    if (t.compactMode === undefined)            t.compactMode = false;
+    if (t.headerGlowEnabled === undefined)      t.headerGlowEnabled = false;
+    if (t.headerGlowIntensity === undefined)    t.headerGlowIntensity = 8;
+    if (t.dividerStyle === undefined)           t.dividerStyle = 'none';
+    if (t.bodyColorReflect === undefined)       t.bodyColorReflect = false;
+    if (t.bodyJustify === undefined)            t.bodyJustify = 'flex-start';
+    if (t.bodyPaddingLeft === undefined)        t.bodyPaddingLeft = 0;
+    if (t.bodyPaddingRight === undefined)       t.bodyPaddingRight = 0;
+    if (t.gridMode === undefined)               t.gridMode = false;
+    if (t.gridCols === undefined)               t.gridCols = 4;
 
     const isAdvOpen = t._advOpen || false;
     const activeTab = t._advTab  || 'header';
@@ -615,6 +644,39 @@ function renderCustomTierBuilder() {
         <div class="adv-item"><label>Hizalama</label><select onchange="updateTierField(${i},'headerAlign',this.value)"><option value="flex-start" ${(t.headerAlign || 'flex-start') === 'flex-start' ? 'selected' : ''}>Sol</option><option value="center" ${t.headerAlign === 'center' ? 'selected' : ''}>Orta</option><option value="flex-end" ${t.headerAlign === 'flex-end' ? 'selected' : ''}>Sağ</option></select></div>
         <div class="adv-item"><label>Header Şekli</label><select onchange="updateTierField(${i},'headerShape',this.value)"><option value="0px" ${(t.headerShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.headerShape === '4px' ? 'selected' : ''}>Hafif Yuvarlak</option><option value="8px" ${t.headerShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="12px" ${t.headerShape === '12px' ? 'selected' : ''}>Çok Yuvarlak</option><option value="50%" ${t.headerShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
         <div class="adv-item"><label>Yazı Boyutu — ${t.nameFontSize || 0.72}rem</label><input type="range" min="0.5" max="1.5" step="0.05" value="${t.nameFontSize || 0.72}" oninput="updateTierField(${i},'nameFontSize',parseFloat(this.value));this.previousElementSibling.textContent='Yazı Boyutu — '+parseFloat(this.value).toFixed(2)+'rem'"></div>
+        <!-- GRADIENT -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+            <input type="checkbox" ${t.headerGradientEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerGradientEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+            &nbsp;🎨 Gradient Header
+          </label>
+        </div>
+        ${t.headerGradientEnabled ? `
+        <div class="adv-item"><label>Renk 1</label><input type="color" value="${t.headerGradientColor1 || '#7c3aed'}" oninput="updateTierField(${i},'headerGradientColor1',this.value)"></div>
+        <div class="adv-item"><label>Renk 2</label><input type="color" value="${t.headerGradientColor2 || '#2563eb'}" oninput="updateTierField(${i},'headerGradientColor2',this.value)"></div>
+        <div class="adv-item adv-full-col"><label>Açı — ${t.headerGradientAngle || 135}°</label><input type="range" min="0" max="360" value="${t.headerGradientAngle || 135}" oninput="updateTierField(${i},'headerGradientAngle',parseFloat(this.value));this.previousElementSibling.textContent='Açı — '+this.value+'°'"></div>
+        <div class="adv-item adv-full-col" style="font-size:0.48rem;color:var(--muted);display:flex;gap:0.4rem;flex-wrap:wrap;">
+          <button onclick="updateTierField(${i},'headerGradientColor1','#7c3aed');updateTierField(${i},'headerGradientColor2','#2563eb')" style="background:linear-gradient(135deg,#7c3aed,#2563eb);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Mor→Mavi</button>
+          <button onclick="updateTierField(${i},'headerGradientColor1','#f97316');updateTierField(${i},'headerGradientColor2','#dc2626')" style="background:linear-gradient(135deg,#f97316,#dc2626);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Turuncu→Kırmızı</button>
+          <button onclick="updateTierField(${i},'headerGradientColor1','#06b6d4');updateTierField(${i},'headerGradientColor2','#6366f1')" style="background:linear-gradient(135deg,#06b6d4,#6366f1);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Cyan→İndigo</button>
+          <button onclick="updateTierField(${i},'headerGradientColor1','#10b981');updateTierField(${i},'headerGradientColor2','#fbbf24')" style="background:linear-gradient(135deg,#10b981,#fbbf24);border:none;color:#000;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Yeşil→Sarı</button>
+        </div>` : ''}
+        <!-- SAYAÇ -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+            <input type="checkbox" ${t.headerCountEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerCountEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+            &nbsp;🔢 Header'da Anime Sayısı
+          </label>
+        </div>
+        <!-- GLOW -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+            <input type="checkbox" ${t.headerGlowEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerGlowEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+            &nbsp;✨ İsim Glow Efekti
+          </label>
+        </div>
+        ${t.headerGlowEnabled ? `
+        <div class="adv-item adv-full-col"><label>Glow Yoğunluğu — ${t.headerGlowIntensity || 8}px</label><input type="range" min="1" max="30" value="${t.headerGlowIntensity || 8}" oninput="updateTierField(${i},'headerGlowIntensity',parseFloat(this.value));this.previousElementSibling.textContent='Glow Yoğunluğu — '+this.value+'px'"></div>` : ''}
       `;
       advWrap.appendChild(headerPanel);
 
@@ -633,6 +695,52 @@ function renderCustomTierBuilder() {
         <div class="adv-item"><label>Çizgi Şeffaflığı — ${t.borderOpacity !== undefined ? t.borderOpacity : 100}%</label><input type="range" min="0" max="100" value="${t.borderOpacity !== undefined ? t.borderOpacity : 100}" oninput="updateTierField(${i},'borderOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Çizgi Şeffaflığı — '+this.value+'%'"></div>
         <div class="adv-item"><label>Gövde Şekli</label><select onchange="updateTierField(${i},'bodyShape',this.value)"><option value="0px" ${(t.bodyShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.bodyShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.bodyShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="0px 0px 8px 8px" ${t.bodyShape === '0px 0px 8px 8px' ? 'selected' : ''}>Alt Yuvarlak</option></select></div>
         <div class="adv-item"><label>Etiket Şekli</label><select onchange="updateTierField(${i},'tagShape',this.value)"><option value="2px" ${(t.tagShape || '2px') === '2px' ? 'selected' : ''}>Varsayılan</option><option value="0px" ${t.tagShape === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.tagShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.tagShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="50px" ${t.tagShape === '50px' ? 'selected' : ''}>Hap</option><option value="50%" ${t.tagShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
+        <!-- COMPACT MOD -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+            <input type="checkbox" ${t.compactMode ? 'checked' : ''} onchange="updateTierField(${i},'compactMode',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+            &nbsp;↔ Compact Mod (Yatay Scroll, Tek Satır)
+          </label>
+        </div>
+        <!-- GRID MOD -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+            <input type="checkbox" ${t.gridMode ? 'checked' : ''} onchange="updateTierField(${i},'gridMode',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+            &nbsp;⊞ Grid Modu
+          </label>
+        </div>
+        ${t.gridMode ? `<div class="adv-item adv-full-col"><label>Sütun Sayısı — ${t.gridCols || 4}</label><input type="range" min="2" max="10" step="1" value="${t.gridCols || 4}" oninput="updateTierField(${i},'gridCols',parseFloat(this.value));this.previousElementSibling.textContent='Sütun Sayısı — '+this.value"></div>` : ''}
+        <!-- AYRAÇ -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label>🔲 Katman Altı Ayraç</label>
+          <select onchange="updateTierField(${i},'dividerStyle',this.value)" style="width:100%;margin-top:0.2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.65rem;padding:0.2rem 0.4rem;border-radius:2px;outline:none;">
+            <option value="none" ${(t.dividerStyle || 'none') === 'none' ? 'selected' : ''}>Yok</option>
+            <option value="line" ${t.dividerStyle === 'line' ? 'selected' : ''}>İnce Çizgi</option>
+            <option value="gradient" ${t.dividerStyle === 'gradient' ? 'selected' : ''}>Gradient Çizgi</option>
+            <option value="band" ${t.dividerStyle === 'band' ? 'selected' : ''}>Görsel Bant</option>
+            <option value="gap" ${t.dividerStyle === 'gap' ? 'selected' : ''}>Büyük Boşluk</option>
+          </select>
+        </div>
+        <!-- RENK YANSITMA -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+            <input type="checkbox" ${t.bodyColorReflect ? 'checked' : ''} onchange="updateTierField(${i},'bodyColorReflect',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+            &nbsp;🎨 Katman Rengi Body'ye Yansısın
+          </label>
+        </div>
+        <!-- SIRALAMA YÖNÜ -->
+        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+          <label>↔ İçerik Hizalaması</label>
+          <select onchange="updateTierField(${i},'bodyJustify',this.value)" style="width:100%;margin-top:0.2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.65rem;padding:0.2rem 0.4rem;border-radius:2px;outline:none;">
+            <option value="flex-start" ${(t.bodyJustify || 'flex-start') === 'flex-start' ? 'selected' : ''}>Soldan Başla</option>
+            <option value="flex-end" ${t.bodyJustify === 'flex-end' ? 'selected' : ''}>Sağdan Başla</option>
+            <option value="center" ${t.bodyJustify === 'center' ? 'selected' : ''}>Ortadan Başla</option>
+            <option value="space-between" ${t.bodyJustify === 'space-between' ? 'selected' : ''}>Eşit Dağıt</option>
+            <option value="space-around" ${t.bodyJustify === 'space-around' ? 'selected' : ''}>Etrafta Dağıt</option>
+          </select>
+        </div>
+        <div class="adv-item"><label>Sol Dolgu — ${t.bodyPaddingLeft || 0}px</label><input type="range" min="0" max="200" step="4" value="${t.bodyPaddingLeft || 0}" oninput="updateTierField(${i},'bodyPaddingLeft',parseFloat(this.value));this.previousElementSibling.textContent='Sol Dolgu — '+this.value+'px'"></div>
+        <div class="adv-item"><label>Sağ Dolgu — ${t.bodyPaddingRight || 0}px</label><input type="range" min="0" max="200" step="4" value="${t.bodyPaddingRight || 0}" oninput="updateTierField(${i},'bodyPaddingRight',parseFloat(this.value));this.previousElementSibling.textContent='Sağ Dolgu — '+this.value+'px'"></div>
       `;
       advWrap.appendChild(bodyPanel);
 
@@ -671,7 +779,8 @@ function updateTierField(i, key, val) {
   const l = getList(AppState.settingsListId); if (!l) return;
   const numericKeys = ['headerHeight','nameFontSize','tierBorderRadius','bannerBlur','bannerBrightness',
     'bodyBannerBlur','bodyBannerBrightness','bodyBannerOpacity','headerBannerSaturation',
-    'bodyMinHeight','tagGap','borderOpacity','headerMinWidth'];
+    'bodyMinHeight','tagGap','borderOpacity','headerMinWidth',
+    'headerGradientAngle','headerGlowIntensity','bodyPaddingLeft','bodyPaddingRight','gridCols'];
   if (numericKeys.includes(key)) val = parseFloat(val);
   l.customTiers[i][key] = val; saveData(); renderCustomTierBuilder(); renderTierPage();
 }
@@ -704,6 +813,15 @@ function addCustomTier() {
     headerMinWidth: 0, nameFontSize: 0.72, borderColor: '', tierBorderRadius: 4,
     bannerImg: null, bannerMode: 'header', bannerFit: 'cover',
     bannerBlur: 0, bannerBrightness: 100, hidden: false,
+    // Yeni özellikler
+    headerGradientEnabled: false, headerGradientColor1: '#7c3aed', headerGradientColor2: '#2563eb', headerGradientAngle: 135,
+    headerCountEnabled: false,
+    compactMode: false,
+    headerGlowEnabled: false, headerGlowIntensity: 8,
+    dividerStyle: 'none',
+    bodyColorReflect: false,
+    bodyJustify: 'flex-start', bodyPaddingLeft: 0, bodyPaddingRight: 0,
+    gridMode: false, gridCols: 4,
   });
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }

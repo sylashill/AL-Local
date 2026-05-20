@@ -336,9 +336,27 @@ function renderTierPage(rebuildSearchBar = true) {
       } else if (!t.headerBannerImg) {
         hc += `<span class="custom-tier-emoji">${escHtml(t.emoji || '⭐')}</span>`;
       }
-      hc += `<span class="custom-tier-name" style="color:${escHtml(t.color || 'var(--accent)')}; font-size:${t.nameFontSize || 0.72}rem; padding-right:60px">${escHtml(t.name || 'İsimsiz')}</span>`;
+
+      // Glow efekti
+      const glowStyle = (t.headerGlowEnabled && t.color)
+        ? `text-shadow:0 0 ${t.headerGlowIntensity || 8}px ${t.color}, 0 0 ${(t.headerGlowIntensity || 8) * 2}px ${t.color}80;`
+        : '';
+      // Sayaç
+      const tierEntries = byCustomTier[t.id] || [];
+      const countBadge = t.headerCountEnabled
+        ? `<span style="font-size:0.55rem;opacity:0.7;font-weight:700;background:${(t.color || '#888') + '22'};border:1px solid ${(t.color || '#888') + '50'};color:${t.color || '#888'};padding:0.1rem 0.4rem;border-radius:10px;flex-shrink:0;">${tierEntries.length}</span>`
+        : '';
+      hc += `<span class="custom-tier-name" style="color:${escHtml(t.color || 'var(--accent)')}; font-size:${t.nameFontSize || 0.72}rem; padding-right:60px; ${glowStyle}">${escHtml(t.name || 'İsimsiz')}</span>${countBadge}`;
       hdrContent.innerHTML = hc;
       hdr.appendChild(hdrContent);
+
+      // Gradient header (headerBg'yi override eder)
+      if (t.headerGradientEnabled) {
+        const g1 = t.headerGradientColor1 || '#7c3aed';
+        const g2 = t.headerGradientColor2 || '#2563eb';
+        const ga = t.headerGradientAngle !== undefined ? t.headerGradientAngle : 135;
+        hdr.style.background = `linear-gradient(${ga}deg, ${g1}, ${g2})`;
+      }
 
       block.appendChild(hdr); block.appendChild(upBtn); block.appendChild(downBtn);
 
@@ -349,6 +367,34 @@ function renderTierPage(rebuildSearchBar = true) {
       body.style.borderRadius = `0 0 ${bodyShape} ${bodyShape}`;
       body.style.minHeight    = bodyMinH + 'px';
       body.style.gap          = tagGapVal + 'px';
+
+      // Compact mod
+      if (t.compactMode) {
+        body.style.flexWrap      = 'nowrap';
+        body.style.overflowX     = 'auto';
+        body.style.overflowY     = 'hidden';
+        body.style.paddingBottom = '4px';
+      }
+
+      // Grid mod
+      if (t.gridMode && !t.compactMode) {
+        body.style.display             = 'grid';
+        body.style.gridTemplateColumns = `repeat(${t.gridCols || 4}, 1fr)`;
+      } else {
+        // justify-content + padding
+        body.style.justifyContent = t.bodyJustify || 'flex-start';
+        body.style.paddingLeft    = (t.bodyPaddingLeft  || 0) + 'px';
+        body.style.paddingRight   = (t.bodyPaddingRight || 0) + 'px';
+      }
+
+      // Renk yansıtma
+      if (t.bodyColorReflect && t.color) {
+        // hex → rgba dönüştür
+        const rgb = hexToRgb(t.color);
+        if (rgb && !t.bodyBannerImg) {
+          body.style.backgroundColor = `rgba(${rgb},0.06)`;
+        }
+      }
 
       if (t.bodyBannerImg) {
         body.style.position        = 'relative';
@@ -368,8 +414,10 @@ function renderTierPage(rebuildSearchBar = true) {
           opacity:${bOp};
         `;
         body.appendChild(bodyBg);
-      } else {
+      } else if (!t.bodyColorReflect) {
         body.style.backgroundColor = t.bodyBg || '';
+      } else if (t.bodyBg) {
+        body.style.backgroundColor = t.bodyBg;
       }
 
       const tagShapeVal = t.tagShape || '2px';
@@ -379,6 +427,22 @@ function renderTierPage(rebuildSearchBar = true) {
         animes.forEach(e => body.appendChild(buildTag(e, t.color || '#888', AppState.activeListId, tagShapeVal)));
       }
       block.appendChild(body); c.appendChild(block);
+
+      // Divider
+      if (t.dividerStyle && t.dividerStyle !== 'none') {
+        const dvd = document.createElement('div');
+        const tierColor = t.color || '#888';
+        if (t.dividerStyle === 'line') {
+          dvd.style.cssText = `height:1px;background:var(--border);margin:0;`;
+        } else if (t.dividerStyle === 'gradient') {
+          dvd.style.cssText = `height:2px;background:linear-gradient(90deg, transparent, ${tierColor}, transparent);margin:0;`;
+        } else if (t.dividerStyle === 'band') {
+          dvd.style.cssText = `height:6px;background:linear-gradient(90deg, ${tierColor}00, ${tierColor}60, ${tierColor}00);margin:0;`;
+        } else if (t.dividerStyle === 'gap') {
+          dvd.style.cssText = `height:24px;`;
+        }
+        c.appendChild(dvd);
+      }
     }
   });
 

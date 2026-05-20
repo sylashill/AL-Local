@@ -134,7 +134,7 @@ body {
 .tiers {
   max-width: 1000px; margin: 0 auto;
   padding: 0.5rem 1rem 2rem; position: relative; z-index: 1;
-  display: flex; flex-direction: column; gap: 0.3rem;
+  display: flex; flex-direction: column; gap: 8px;
 }
 .tier-block {
   border-radius: 4px; overflow: hidden;
@@ -178,6 +178,9 @@ body {
   padding: 0.45rem 0.55rem; align-content: flex-start;
   position: relative; z-index: 2;
 }
+.custom-tier-body::-webkit-scrollbar { height: 4px; }
+.custom-tier-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.custom-tier-body::-webkit-scrollbar-track { background: transparent; }
 .tier-body-bg {
   position: absolute; inset: 0; z-index: 1;
   background-size: cover; background-position: center; pointer-events: none;

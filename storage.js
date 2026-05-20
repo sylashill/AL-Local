@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   'op-border': 100, 'op-tag': 100, 'ui-sat': 100, 'ui-bri': 100,
   bgOpacity: 18, bgImg: null,
   sortMode: 'added',   // 'added' | 'name' | 'score-asc' | 'score-desc'
+  tierGap: 8,          // tier blokları arası boşluk (px)
 };
 
 const STAR_TIERS_BASE = [

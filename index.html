@@ -197,8 +197,17 @@
       <!-- Görsel URL -->
       <div class="field">
         <label>Görsel URL</label>
-        <input type="url" id="f-img-url" placeholder="https://cdn.myanimelist.net/…"
-          oninput="updateFormImgPreview()" autocomplete="off">
+        <div style="display:flex;gap:0.4rem;align-items:center;">
+          <input type="url" id="f-img-url" placeholder="https://cdn.myanimelist.net/…"
+            oninput="updateFormImgPreview()" autocomplete="off" style="flex:1;">
+          <button type="button" onclick="openImgUploadPicker()"
+            title="Görsel yükle"
+            style="flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--accent);font-family:inherit;font-size:0.65rem;letter-spacing:0.06em;padding:0.42rem 0.7rem;border-radius:2px;cursor:pointer;white-space:nowrap;transition:border-color 0.2s,background 0.2s;"
+            onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(224,64,251,0.08)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface)'">
+            ⬆ Yükle
+          </button>
+        </div>
         <div class="img-drop" style="margin-top:0.5rem;">
           <img class="img-preview" id="img-prev" src="" alt="" style="display:none;">
           <p id="img-label">URL gir → önizleme görünür</p>

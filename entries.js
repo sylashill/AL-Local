@@ -108,6 +108,192 @@ function updateFormImgPreview() {
 }
 
 // ─────────────────────────────────────────
+//  GÖRSEL UPLOAD (Catbox.moe & Imgbb)
+// ─────────────────────────────────────────
+let _uploadProvider = 'catbox'; // 'catbox' | 'imgbb'
+let _imgbbApiKey    = '';
+
+function openImgUploadPicker() {
+  const existing = document.getElementById('img-upload-modal');
+  if (existing) { existing.remove(); return; }
+
+  const modal = document.createElement('div');
+  modal.id = 'img-upload-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    background:var(--card);border:1px solid var(--border);border-radius:6px;
+    padding:1.2rem 1.4rem;width:min(92vw,380px);display:flex;flex-direction:column;gap:0.8rem;
+    font-family:inherit;
+  `;
+
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;color:var(--accent);">🖼 Görsel Yükle</span>
+      <button id="img-upload-close" style="background:transparent;border:none;color:var(--muted);font-size:1rem;cursor:pointer;line-height:1;padding:0.1rem 0.3rem;">✕</button>
+    </div>
+
+    <!-- Servis seçimi -->
+    <div style="display:flex;gap:0.4rem;">
+      <button id="upbtn-catbox" onclick="setUploadProvider('catbox')"
+        style="flex:1;padding:0.4rem;font-family:inherit;font-size:0.62rem;letter-spacing:0.06em;text-transform:uppercase;border-radius:3px;cursor:pointer;transition:all 0.15s;
+               background:${_uploadProvider==='catbox'?'var(--accent)':'var(--surface)'};
+               color:${_uploadProvider==='catbox'?'#000':'var(--muted)'};
+               border:1px solid ${_uploadProvider==='catbox'?'var(--accent)':'var(--border)'};">
+        Catbox.moe<br><span style="font-size:0.5rem;opacity:0.7;">Anonim · Ücretsiz</span>
+      </button>
+      <button id="upbtn-imgbb" onclick="setUploadProvider('imgbb')"
+        style="flex:1;padding:0.4rem;font-family:inherit;font-size:0.62rem;letter-spacing:0.06em;text-transform:uppercase;border-radius:3px;cursor:pointer;transition:all 0.15s;
+               background:${_uploadProvider==='imgbb'?'var(--accent)':'var(--surface)'};
+               color:${_uploadProvider==='imgbb'?'#000':'var(--muted)'};
+               border:1px solid ${_uploadProvider==='imgbb'?'var(--accent)':'var(--border)'};">
+        ImgBB<br><span style="font-size:0.5rem;opacity:0.7;">API key gerekli</span>
+      </button>
+    </div>
+
+    <!-- ImgBB API key alanı -->
+    <div id="imgbb-key-wrap" style="display:${_uploadProvider==='imgbb'?'flex':'none'};flex-direction:column;gap:0.3rem;">
+      <label style="font-size:0.55rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">ImgBB API Key
+        <a href="https://api.imgbb.com/" target="_blank" style="color:var(--accent);margin-left:0.3rem;font-size:0.5rem;">↗ Al</a>
+      </label>
+      <input id="imgbb-api-key-inp" type="text" placeholder="Buraya yapıştır…" value="${_imgbbApiKey}"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.72rem;padding:0.38rem 0.5rem;border-radius:2px;outline:none;width:100%;">
+    </div>
+
+    <!-- Dosya seçici -->
+    <div>
+      <label style="font-size:0.55rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:0.35rem;">Dosya Seç (jpg, png, webp, gif)</label>
+      <label id="img-file-label" style="
+        display:flex;align-items:center;justify-content:center;gap:0.5rem;
+        border:1px dashed var(--border);border-radius:4px;padding:0.8rem;
+        cursor:pointer;transition:border-color 0.2s;font-size:0.65rem;color:var(--muted);">
+        📁 Dosya seç veya sürükle
+        <input type="file" id="img-file-input" accept="image/*" style="display:none;">
+      </label>
+      <div id="img-file-name" style="font-size:0.58rem;color:var(--muted);margin-top:0.25rem;min-height:0.9rem;"></div>
+    </div>
+
+    <!-- Yükle butonu -->
+    <button id="img-upload-btn" onclick="doImageUpload()"
+      style="background:var(--accent);color:#000;border:none;font-family:inherit;font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.5rem;border-radius:3px;cursor:pointer;transition:opacity 0.2s;">
+      ⬆ Yükle
+    </button>
+
+    <!-- Durum -->
+    <div id="img-upload-status" style="font-size:0.62rem;color:var(--muted);text-align:center;min-height:1rem;"></div>
+  `;
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  document.getElementById('img-upload-close').onclick = () => modal.remove();
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  const fileInp = document.getElementById('img-file-input');
+  fileInp.addEventListener('change', () => {
+    const name = fileInp.files[0] ? fileInp.files[0].name : '';
+    document.getElementById('img-file-name').textContent = name ? '📎 ' + name : '';
+  });
+
+  // Sürükle-bırak
+  const lbl = document.getElementById('img-file-label');
+  lbl.addEventListener('dragover', e => { e.preventDefault(); lbl.style.borderColor = 'var(--accent)'; });
+  lbl.addEventListener('dragleave', () => { lbl.style.borderColor = 'var(--border)'; });
+  lbl.addEventListener('drop', e => {
+    e.preventDefault(); lbl.style.borderColor = 'var(--border)';
+    if (e.dataTransfer.files[0]) {
+      fileInp.files = e.dataTransfer.files;
+      document.getElementById('img-file-name').textContent = '📎 ' + e.dataTransfer.files[0].name;
+    }
+  });
+}
+
+function setUploadProvider(p) {
+  _uploadProvider = p;
+  // Buton stillerini güncelle
+  const cb = document.getElementById('upbtn-catbox');
+  const ib = document.getElementById('upbtn-imgbb');
+  const kw = document.getElementById('imgbb-key-wrap');
+  if (cb) {
+    cb.style.background = p === 'catbox' ? 'var(--accent)' : 'var(--surface)';
+    cb.style.color      = p === 'catbox' ? '#000' : 'var(--muted)';
+    cb.style.borderColor= p === 'catbox' ? 'var(--accent)' : 'var(--border)';
+  }
+  if (ib) {
+    ib.style.background = p === 'imgbb' ? 'var(--accent)' : 'var(--surface)';
+    ib.style.color      = p === 'imgbb' ? '#000' : 'var(--muted)';
+    ib.style.borderColor= p === 'imgbb' ? 'var(--accent)' : 'var(--border)';
+  }
+  if (kw) kw.style.display = p === 'imgbb' ? 'flex' : 'none';
+}
+
+async function doImageUpload() {
+  const fileInp = document.getElementById('img-file-input');
+  const statusEl = document.getElementById('img-upload-status');
+  const uploadBtn = document.getElementById('img-upload-btn');
+
+  if (!fileInp || !fileInp.files[0]) {
+    statusEl.style.color = '#ff6060';
+    statusEl.textContent = '⚠ Önce bir dosya seç.'; return;
+  }
+
+  const file = fileInp.files[0];
+  if (file.size > 20 * 1024 * 1024) {
+    statusEl.style.color = '#ff6060';
+    statusEl.textContent = '⚠ Dosya 20MB\'den büyük olamaz.'; return;
+  }
+
+  uploadBtn.disabled = true; uploadBtn.style.opacity = '0.5';
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = '⏳ Yükleniyor…';
+
+  try {
+    let resultUrl = '';
+
+    if (_uploadProvider === 'catbox') {
+      // Catbox.moe anonim upload
+      const fd = new FormData();
+      fd.append('reqtype', 'fileupload');
+      fd.append('fileToUpload', file);
+      const res = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: fd });
+      if (!res.ok) throw new Error('Catbox sunucu hatası: ' + res.status);
+      const text = await res.text();
+      if (!text.startsWith('https://')) throw new Error('Beklenmedik yanıt: ' + text.slice(0, 80));
+      resultUrl = text.trim();
+
+    } else {
+      // ImgBB upload
+      const keyInp = document.getElementById('imgbb-api-key-inp');
+      const key = keyInp ? keyInp.value.trim() : _imgbbApiKey;
+      if (!key) { throw new Error('ImgBB API key boş. "↗ Al" linkinden ücretsiz alabilirsin.'); }
+      _imgbbApiKey = key;
+      const fd = new FormData(); fd.append('image', file);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(key)}`, { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error?.message || 'ImgBB hatası');
+      resultUrl = json.data.url;
+    }
+
+    // URL input'una yaz ve önizlemeyi güncelle
+    const urlInp = document.getElementById('f-img-url');
+    if (urlInp) { urlInp.value = resultUrl; updateFormImgPreview(); }
+
+    statusEl.style.color = '#4caf50';
+    statusEl.textContent = '✓ Yüklendi! URL forma aktarıldı.';
+    setTimeout(() => { const m = document.getElementById('img-upload-modal'); if (m) m.remove(); }, 1200);
+
+  } catch (err) {
+    statusEl.style.color = '#ff6060';
+    statusEl.textContent = '✕ ' + err.message;
+    uploadBtn.disabled = false; uploadBtn.style.opacity = '1';
+  }
+}
+
+// ─────────────────────────────────────────
 //  ÖZEL ALAN (CUSTOM FIELD) FORM RENDERI
 // ─────────────────────────────────────────
 function renderCustomFieldInputs(editId) {
