@@ -112,7 +112,7 @@ function buildSettingsDynamicContent() {
       <div style="margin-bottom:1rem;">
         <div style="font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;">Font</div>
         <select id="font-select" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.4rem 0.5rem;border-radius:2px;outline:none;cursor:pointer;" onchange="applyFontSetting()">
-          ${GOOGLE_FONTS.map(f => `<option value="${f}">${f}</option>`).join('')}
+          ${GOOGLE_FONTS.map(f => `<option value="${f}" style="font-family:'${f}', sans-serif;">${f}</option>`).join('')}
         </select>
         <div class="font-preview" id="font-preview">Anime listesi — サンプルテキスト — 0123456789</div>
       </div>
@@ -299,8 +299,8 @@ function applyAllSettingsToDOM(s) {
   r.setProperty('--ui-brightness',   (s['ui-bri'] || 100) + '%');
   const font = s.font || 'Inconsolata';
   loadGoogleFont(font);
-  document.body.style.fontFamily = `'${font}',monospace`;
-  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}',monospace`;
+  document.body.style.fontFamily = `'${font}', sans-serif`;
+  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}', sans-serif`;
   const bgLayer = document.getElementById('bg-layer');
   bgLayer.style.backgroundImage = s.bgImg ? `url("${s.bgImg}")` : 'none';
   bgLayer.style.opacity = (s.bgOpacity || 18) / 100;
@@ -346,8 +346,8 @@ function applyFontSetting() {
   const fontSel = document.getElementById('font-select'); if (!fontSel) return;
   const font = fontSel.value;
   loadGoogleFont(font);
-  document.body.style.fontFamily = `'${font}',monospace`;
-  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}',monospace`;
+  document.body.style.fontFamily = `'${font}', sans-serif`;
+  const fp = document.getElementById('font-preview'); if (fp) fp.style.fontFamily = `'${font}', sans-serif`;
   saveSetting('font', font);
 }
 
