@@ -73,10 +73,13 @@ function parseScore(raw) {
 function sortEntries(entries, mode) {
   const arr = [...entries];
   switch (mode) {
-    case 'name':       return arr.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
-    case 'score-desc': return arr.sort((a, b) => b.score - a.score);
-    case 'score-asc':  return arr.sort((a, b) => a.score - b.score);
-    default:           return arr; // 'added' — ekleme sırası
+    case 'name':         return arr.sort((a, b) => (a.name  || '').localeCompare(b.name  || '', 'tr'));
+    case 'title':        return arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'tr'));
+    case 'score-desc':   return arr.sort((a, b) => b.score - a.score);
+    case 'score-asc':    return arr.sort((a, b) => a.score - b.score);
+    case 'watched-asc':  return arr.sort((a, b) => (a.watched || '').localeCompare(b.watched || '', 'tr'));
+    case 'watched-desc': return arr.sort((a, b) => (b.watched || '').localeCompare(a.watched || '', 'tr'));
+    default:             return arr; // 'added'
   }
 }
 

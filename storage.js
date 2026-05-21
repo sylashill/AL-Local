@@ -5,14 +5,22 @@
 
 const DEFAULT_SETTINGS = {
   font: 'Inconsolata',
-  fontSize: 14,   // px — temel yazı boyutu
+  fontSize: 14,
   'col-bg': '#08080f', 'col-surface': '#0e0e1a', 'col-card': '#131320',
   'col-border': '#1f1f35', 'col-text': '#ddddf5', 'col-accent': '#e040fb',
   'op-nav': 90, 'op-modal': 100, 'op-card': 100, 'op-surface': 100,
   'op-border': 100, 'op-tag': 100, 'ui-sat': 100, 'ui-bri': 100,
   bgOpacity: 18, bgImg: null,
-  sortMode: 'added',   // 'added' | 'name' | 'score-asc' | 'score-desc'
-  tierGap: 8,          // tier blokları arası boşluk (px)
+  sortMode: 'added',
+  tierGap: 8,
+  // Kart & Görünüm
+  cardRadius: 3, cardWidth: 80, cardHeight: 112,
+  cardShadow: 12, cardHoverBright: 140, cardHoverLift: 2,
+  cardImgPos: 'top', cardImgFit: 'cover',
+  // Liste & Sıralama
+  tagShapeGlobal: '2px', tagPadX: 6, tagPadY: 3,
+  // Animasyon
+  transitionSpeed: '120ms',
 };
 
 const STAR_TIERS_BASE = [

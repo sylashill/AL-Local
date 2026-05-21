@@ -202,6 +202,145 @@ function buildSettingsDynamicContent() {
       <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.7;">Seçili listenin renk, font, şeffaflık ve arka plan ayarlarını sıfırlar. Animeler ve özel katmanlar korunur.</p>
       <button class="btn-reset-default" onclick="confirmResetDefaults()">↺ &nbsp;Varsayılan Ayarlara Dön</button>
     </div>
+
+    <!-- KART & GÖRÜNÜM -->
+    <div class="settings-section">
+      <h2>Kart &amp; Görünüm</h2>
+      <div class="settings-grid">
+
+        <div class="setting-item full-col">
+          <label>Kart Köşe Yarıçapı</label>
+          <input type="range" id="card-radius" min="0" max="20" step="1" value="3"
+            oninput="applyCardSetting('cardRadius',this.value,this,'px')">
+          <div class="val-disp" id="vd-cardradius">3px</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Poster Genişliği (img modu)</label>
+          <input type="range" id="card-width" min="48" max="200" step="4" value="80"
+            oninput="applyCardSetting('cardWidth',this.value,this,'px')">
+          <div class="val-disp" id="vd-cardwidth">80px</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Poster Yüksekliği (img modu)</label>
+          <input type="range" id="card-height" min="64" max="280" step="4" value="112"
+            oninput="applyCardSetting('cardHeight',this.value,this,'px')">
+          <div class="val-disp" id="vd-cardheight">112px</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Hover Gölge Yoğunluğu</label>
+          <input type="range" id="card-shadow" min="0" max="40" step="2" value="12"
+            oninput="applyCardSetting('cardShadow',this.value,this,'px')">
+          <div class="val-disp" id="vd-cardshadow">12px</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Hover Parlaklık Artışı</label>
+          <input type="range" id="card-hover-bright" min="100" max="250" step="5" value="140"
+            oninput="applyCardSetting('cardHoverBright',this.value,this,'%')">
+          <div class="val-disp" id="vd-cardhoverbright">140%</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Hover Yükseklik (translateY)</label>
+          <input type="range" id="card-hover-lift" min="0" max="10" step="1" value="2"
+            oninput="applyCardSetting('cardHoverLift',this.value,this,'px')">
+          <div class="val-disp" id="vd-cardhoverlift">2px</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Poster Kırpma Pozisyonu</label>
+          <select id="card-img-pos" onchange="applyCardSelectSetting('cardImgPos',this.value)"
+            style="background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.68rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;width:100%;cursor:pointer;">
+            <option value="top">Üstten (varsayılan)</option>
+            <option value="center">Ortadan</option>
+            <option value="bottom">Alttan</option>
+          </select>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Poster Fit Modu</label>
+          <select id="card-img-fit" onchange="applyCardSelectSetting('cardImgFit',this.value)"
+            style="background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.68rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;width:100%;cursor:pointer;">
+            <option value="cover">Cover (doldur)</option>
+            <option value="contain">Contain (tam göster)</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- LİSTE & SIRALAMA -->
+    <div class="settings-section">
+      <h2>Liste &amp; Sıralama</h2>
+      <div class="settings-grid">
+
+        <div class="setting-item full-col">
+          <label>Varsayılan Sıralama</label>
+          <select id="default-sort" onchange="applyDefaultSort(this.value)"
+            style="background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.68rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;width:100%;cursor:pointer;">
+            <option value="added">Eklenme sırası</option>
+            <option value="name">A–Z İsim (Japonca)</option>
+            <option value="title">A–Z Başlık (Türkçe/İngilizce)</option>
+            <option value="score-desc">Puan ↓ (yüksekten düşüğe)</option>
+            <option value="score-asc">Puan ↑ (düşükten yükseğe)</option>
+            <option value="watched-asc">İzlenme sayısı ↑</option>
+            <option value="watched-desc">İzlenme sayısı ↓</option>
+          </select>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Etiket Şekli (metin modu)</label>
+          <select id="tag-shape-global" onchange="applyTagShapeGlobal(this.value)"
+            style="background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.68rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;width:100%;cursor:pointer;">
+            <option value="2px">Köşeli (2px)</option>
+            <option value="0px">Tam Köşeli (0px)</option>
+            <option value="6px">Hafif Yuvarlak (6px)</option>
+            <option value="12px">Yuvarlak (12px)</option>
+            <option value="999px">Pill / Kapsül</option>
+          </select>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Etiket İç Boşluğu (yatay)</label>
+          <input type="range" id="tag-pad-x" min="2" max="20" step="1" value="6"
+            oninput="applyTagPad('x',this.value,this)">
+          <div class="val-disp" id="vd-tagpadx">6px</div>
+        </div>
+
+        <div class="setting-item full-col">
+          <label>Etiket İç Boşluğu (dikey)</label>
+          <input type="range" id="tag-pad-y" min="1" max="12" step="1" value="3"
+            oninput="applyTagPad('y',this.value,this)">
+          <div class="val-disp" id="vd-tagpady">3px</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ANİMASYON -->
+    <div class="settings-section">
+      <h2>Animasyon</h2>
+      <div class="settings-grid">
+
+        <div class="setting-item full-col">
+          <label>Hover Geçiş Hızı</label>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.3rem;">
+            ${[['Kapalı','0ms'],['Anlık','60ms'],['Hızlı','120ms'],['Normal','200ms'],['Yavaş','350ms'],['Çok Yavaş','600ms']].map(([lbl,val]) =>
+              `<button onclick="applyTransitionSpeed('${val}',this)"
+                class="anim-preset-btn" data-val="${val}"
+                style="background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.52rem;padding:0.22rem 0.6rem;border-radius:2px;cursor:pointer;letter-spacing:0.05em;">
+                ${lbl}
+              </button>`
+            ).join('')}
+          </div>
+          <div style="font-size:0.5rem;color:var(--muted);margin-top:0.35rem;">Seçili: <span id="vd-transitionspeed">120ms</span></div>
+        </div>
+
+      </div>
+    </div>
   `;
 
   const l = getList(AppState.settingsListId);
@@ -299,6 +438,38 @@ function loadSettingsUI(listId) {
   updateBgDropPreview(s.bgImg);
   const tierGapEl = document.getElementById('tier-gap');
   if (tierGapEl) { tierGapEl.value = s.tierGap !== undefined ? s.tierGap : 8; const vd = document.getElementById('vd-tiergap'); if (vd) vd.textContent = tierGapEl.value + 'px'; }
+
+  // Kart & Görünüm
+  const sliders = [
+    ['card-radius','cardRadius','vd-cardradius',3,'px'],
+    ['card-width','cardWidth','vd-cardwidth',80,'px'],
+    ['card-height','cardHeight','vd-cardheight',112,'px'],
+    ['card-shadow','cardShadow','vd-cardshadow',12,'px'],
+    ['card-hover-bright','cardHoverBright','vd-cardhoverbright',140,'%'],
+    ['card-hover-lift','cardHoverLift','vd-cardhoverlift',2,'px'],
+    ['tag-pad-x','tagPadX','vd-tagpadx',6,'px'],
+    ['tag-pad-y','tagPadY','vd-tagpady',3,'px'],
+  ];
+  sliders.forEach(([id, key, vdId, def, unit]) => {
+    const el = document.getElementById(id); if (!el) return;
+    el.value = s[key] !== undefined ? s[key] : def;
+    const vd = document.getElementById(vdId); if (vd) vd.textContent = el.value + unit;
+  });
+  const imgPosEl = document.getElementById('card-img-pos'); if (imgPosEl) imgPosEl.value = s.cardImgPos || 'top';
+  const imgFitEl = document.getElementById('card-img-fit'); if (imgFitEl) imgFitEl.value = s.cardImgFit || 'cover';
+
+  // Liste & Sıralama
+  const defSortEl = document.getElementById('default-sort'); if (defSortEl) defSortEl.value = s.sortMode || 'added';
+  const tagShapeEl = document.getElementById('tag-shape-global'); if (tagShapeEl) tagShapeEl.value = s.tagShapeGlobal || '2px';
+
+  // Animasyon
+  const speedVal = s.transitionSpeed || '120ms';
+  const vdSpeed = document.getElementById('vd-transitionspeed'); if (vdSpeed) vdSpeed.textContent = speedVal;
+  document.querySelectorAll('.anim-preset-btn').forEach(btn => {
+    btn.style.borderColor = btn.dataset.val === speedVal ? 'var(--accent)' : 'var(--border)';
+    btn.style.color       = btn.dataset.val === speedVal ? 'var(--accent)' : 'var(--text)';
+  });
+
   applyAllSettingsToDOM(s);
 }
 
@@ -328,6 +499,21 @@ function applyAllSettingsToDOM(s) {
   bgLayer.style.opacity = (s.bgOpacity || 18) / 100;
   const tc = document.getElementById('tiers-container');
   if (tc) tc.style.gap = (s.tierGap !== undefined ? s.tierGap : 8) + 'px';
+
+  // Kart & görünüm CSS değişkenleri
+  r.setProperty('--card-radius',       (s.cardRadius      !== undefined ? s.cardRadius      : 3)   + 'px');
+  r.setProperty('--card-shadow-blur',  (s.cardShadow      !== undefined ? s.cardShadow      : 12)  + 'px');
+  r.setProperty('--card-hover-bright', (s.cardHoverBright !== undefined ? s.cardHoverBright : 140) + '%');
+  r.setProperty('--card-hover-lift',   (s.cardHoverLift   !== undefined ? s.cardHoverLift   : 2)   + 'px');
+  r.setProperty('--card-img-w',        (s.cardWidth       !== undefined ? s.cardWidth       : 80)  + 'px');
+  r.setProperty('--card-img-h',        (s.cardHeight      !== undefined ? s.cardHeight      : 112) + 'px');
+  r.setProperty('--card-img-pos',       s.cardImgPos  || 'top');
+  r.setProperty('--card-img-fit',       s.cardImgFit  || 'cover');
+  r.setProperty('--tag-shape-global',   s.tagShapeGlobal || '2px');
+  r.setProperty('--tag-pad-x',         (s.tagPadX !== undefined ? s.tagPadX : 6) + 'px');
+  r.setProperty('--tag-pad-y',         (s.tagPadY !== undefined ? s.tagPadY : 3) + 'px');
+  // Animasyon hızı
+  r.setProperty('--transition-speed',   s.transitionSpeed || '120ms');
 }
 
 function saveSetting(key, value) {
@@ -353,6 +539,80 @@ function applyOpacitySetting(key, value) {
   const dispEl = document.getElementById(dispMap[key]); if (dispEl) dispEl.textContent = '%' + v;
   const sKey = (key === 'sat') ? 'ui-sat' : (key === 'bri') ? 'ui-bri' : 'op-' + key;
   saveSetting(sKey, v);
+  AppState._lastAppliedListId = null;
+}
+
+// ─── Kart & Görünüm ───
+function applyCardSetting(key, value, inputEl, unit) {
+  const v = parseInt(value);
+  const cssMap = {
+    cardRadius:       '--card-radius',
+    cardShadow:       '--card-shadow-blur',
+    cardHoverBright:  '--card-hover-bright',
+    cardHoverLift:    '--card-hover-lift',
+    cardWidth:        '--card-img-w',
+    cardHeight:       '--card-img-h',
+  };
+  const vdMap = {
+    cardRadius:'vd-cardradius', cardShadow:'vd-cardshadow',
+    cardHoverBright:'vd-cardhoverbright', cardHoverLift:'vd-cardhoverlift',
+    cardWidth:'vd-cardwidth', cardHeight:'vd-cardheight',
+  };
+  if (cssMap[key]) document.documentElement.style.setProperty(cssMap[key], v + unit);
+  const vd = document.getElementById(vdMap[key]); if (vd) vd.textContent = v + unit;
+  saveSetting(key, v);
+  AppState._lastAppliedListId = null;
+}
+
+function applyCardSelectSetting(key, value) {
+  const cssMap = { cardImgPos: '--card-img-pos', cardImgFit: '--card-img-fit' };
+  if (cssMap[key]) document.documentElement.style.setProperty(cssMap[key], value);
+  saveSetting(key, value);
+  AppState._lastAppliedListId = null;
+}
+
+// ─── Liste & Sıralama ───
+function applyDefaultSort(value) {
+  const l = getList(AppState.settingsListId); if (!l) return;
+  saveSetting('sortMode', value);
+  // Aktif liste de aynıysa anında uygula
+  if (AppState.activeListId === AppState.settingsListId) {
+    const al = getList(AppState.activeListId);
+    if (al) { al.settings.sortMode = value; saveData(); }
+    renderTierPage(false);
+  }
+}
+
+function applyTagShapeGlobal(value) {
+  document.documentElement.style.setProperty('--tag-shape-global', value);
+  saveSetting('tagShapeGlobal', value);
+  AppState._lastAppliedListId = null;
+}
+
+function applyTagPad(axis, value, inputEl) {
+  const v = parseInt(value);
+  if (axis === 'x') {
+    document.documentElement.style.setProperty('--tag-pad-x', v + 'px');
+    const vd = document.getElementById('vd-tagpadx'); if (vd) vd.textContent = v + 'px';
+    saveSetting('tagPadX', v);
+  } else {
+    document.documentElement.style.setProperty('--tag-pad-y', v + 'px');
+    const vd = document.getElementById('vd-tagpady'); if (vd) vd.textContent = v + 'px';
+    saveSetting('tagPadY', v);
+  }
+  AppState._lastAppliedListId = null;
+}
+
+// ─── Animasyon ───
+function applyTransitionSpeed(value, btn) {
+  document.documentElement.style.setProperty('--transition-speed', value);
+  const vd = document.getElementById('vd-transitionspeed'); if (vd) vd.textContent = value;
+  // Seçili butonu vurgula
+  document.querySelectorAll('.anim-preset-btn').forEach(b => {
+    b.style.borderColor = b === btn ? 'var(--accent)' : 'var(--border)';
+    b.style.color       = b === btn ? 'var(--accent)' : 'var(--text)';
+  });
+  saveSetting('transitionSpeed', value);
   AppState._lastAppliedListId = null;
 }
 

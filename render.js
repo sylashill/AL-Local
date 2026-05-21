@@ -76,10 +76,13 @@ function renderSearchBar() {
   sortWrap.innerHTML = `
     <label class="sort-label">Sırala</label>
     <select class="sort-select" id="sort-select">
-      <option value="added"      ${sortMode === 'added'      ? 'selected' : ''}>Eklenme</option>
-      <option value="name"       ${sortMode === 'name'       ? 'selected' : ''}>A–Z İsim</option>
-      <option value="score-desc" ${sortMode === 'score-desc' ? 'selected' : ''}>Puan ↓</option>
-      <option value="score-asc"  ${sortMode === 'score-asc'  ? 'selected' : ''}>Puan ↑</option>
+      <option value="added"        ${sortMode === 'added'        ? 'selected' : ''}>Eklenme</option>
+      <option value="name"         ${sortMode === 'name'         ? 'selected' : ''}>A–Z İsim</option>
+      <option value="title"        ${sortMode === 'title'        ? 'selected' : ''}>A–Z Başlık</option>
+      <option value="score-desc"   ${sortMode === 'score-desc'   ? 'selected' : ''}>Puan ↓</option>
+      <option value="score-asc"    ${sortMode === 'score-asc'    ? 'selected' : ''}>Puan ↑</option>
+      <option value="watched-asc"  ${sortMode === 'watched-asc'  ? 'selected' : ''}>İzlenme ↑</option>
+      <option value="watched-desc" ${sortMode === 'watched-desc' ? 'selected' : ''}>İzlenme ↓</option>
     </select>
   `;
   bar.appendChild(sortWrap);
@@ -466,16 +469,14 @@ function buildTag(e, defaultColor, listId, shape) {
   tag.style.borderColor = color + '50';
   tag.style.color       = color + 'cc';
   tag.style.background  = color + '0a';
-  const finalShape = e.tagShapeOverride || shape;
+  // shape: per-tier tagShape > entry override > global CSS var (CSS handles default)
+  const finalShape = e.tagShapeOverride || shape || null;
   if (finalShape) tag.style.borderRadius = finalShape;
+  // else CSS --tag-shape-global applies via .anime-tag { border-radius: var(--tag-shape-global) }
   const tagSat  = e.tagSat  !== undefined ? e.tagSat  : 100;
   const tagSize = e.tagSize !== undefined ? e.tagSize : 0.65;
-  if (tagSat !== 100 || tagSize !== 0.65) {
-    const filters = [];
-    if (tagSat !== 100) filters.push(`saturate(${tagSat}%)`);
-    if (filters.length)    tag.style.filter   = filters.join(' ');
-    if (tagSize !== 0.65)  tag.style.fontSize = tagSize + 'rem';
-  }
+  if (tagSat !== 100) tag.style.filter   = `saturate(${tagSat}%)`;
+  if (tagSize !== 0.65) tag.style.fontSize = tagSize + 'rem';
   tag.addEventListener('click', () => openDetail(e.id, listId));
 
   if (AppState.viewMode === 'img') {

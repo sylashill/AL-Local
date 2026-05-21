@@ -10,6 +10,21 @@
   --nav-opacity: 0.9; --card-opacity: 1; --tag-opacity: 1; --surface-opacity: 1;
   --modal-opacity: 1; --border-opacity: 1; --ui-saturation: 100%; --ui-brightness: 100%;
   --base-font-size: 14px;
+  /* Kart & Görünüm */
+  --card-radius: 3px;
+  --card-img-w: 80px;
+  --card-img-h: 112px;
+  --card-img-pos: top;
+  --card-img-fit: cover;
+  --card-shadow-blur: 12px;
+  --card-hover-bright: 140%;
+  --card-hover-lift: 2px;
+  /* Etiket */
+  --tag-shape-global: 2px;
+  --tag-pad-x: 6px;
+  --tag-pad-y: 3px;
+  /* Animasyon */
+  --transition-speed: 120ms;
 }
 
 body {
@@ -44,7 +59,7 @@ body {
   background: transparent; border: none; color: var(--muted);
   font-family: inherit; font-size: 0.68rem; letter-spacing: 0.08em;
   text-transform: uppercase; cursor: pointer;
-  transition: color 0.2s, background 0.2s;
+  transition: color var(--transition-speed), background var(--transition-speed);
   border-bottom: 2px solid transparent; white-space: nowrap;
 }
 .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -139,7 +154,7 @@ body {
   display: flex; flex-direction: column; gap: 8px;
 }
 .tier-block {
-  border-radius: 4px; overflow: hidden;
+  border-radius: var(--card-radius); overflow: hidden;
   border: 1px solid rgba(31,31,53,var(--border-opacity));
 }
 .tier-header {
@@ -163,7 +178,7 @@ body {
 
 /* ── CUSTOM TIER BLOCK ── */
 .custom-tier-block {
-  border-radius: 4px; overflow: hidden;
+  border-radius: var(--card-radius); overflow: hidden;
   border: 1px solid rgba(31,31,53,var(--border-opacity)); position: relative;
 }
 .custom-tier-hdr {
@@ -204,16 +219,22 @@ body {
 
 /* ── ANIME TAG ── */
 .anime-tag {
-  font-size: 0.65rem; padding: 0.22rem 0.6rem;
-  border-radius: 2px; border: 1px solid; cursor: pointer;
+  font-size: 0.65rem;
+  padding: var(--tag-pad-y) var(--tag-pad-x);
+  border-radius: var(--tag-shape-global);
+  border: 1px solid; cursor: pointer;
   white-space: nowrap; letter-spacing: 0.03em;
-  transition: transform 0.12s, filter 0.12s, box-shadow 0.12s, opacity 0.15s;
+  transition: transform var(--transition-speed),
+              filter    var(--transition-speed),
+              box-shadow var(--transition-speed),
+              opacity   var(--transition-speed);
   position: relative; opacity: var(--tag-opacity);
 }
 .anime-tag:hover {
-  transform: translateY(-2px) scale(1.04);
-  filter: brightness(1.4);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 5;
+  transform: translateY(calc(-1 * var(--card-hover-lift))) scale(1.04);
+  filter: brightness(var(--card-hover-bright));
+  box-shadow: 0 var(--card-shadow-blur) calc(var(--card-shadow-blur) * 2) rgba(0,0,0,0.4);
+  z-index: 5;
 }
 .anime-tag.filtered-out { opacity: 0.15 !important; pointer-events: none; }
 
@@ -221,20 +242,28 @@ body {
 .tier-body.img-mode .anime-tag,
 .custom-tier-body.img-mode .anime-tag {
   border: none !important; background: transparent !important;
-  padding: 0; width: 80px; height: 112px; overflow: hidden; border-radius: 3px;
+  padding: 0;
+  width: var(--card-img-w); height: var(--card-img-h);
+  overflow: hidden; border-radius: var(--card-radius);
 }
 .tier-body.img-mode .anime-tag .tag-img-wrap,
 .custom-tier-body.img-mode .anime-tag .tag-img-wrap {
-  width: 80px; height: 112px; border-radius: 3px; overflow: hidden;
-  border: 1px solid var(--border); transition: transform 0.15s, box-shadow 0.15s;
+  width: var(--card-img-w); height: var(--card-img-h);
+  border-radius: var(--card-radius); overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
 }
 .tier-body.img-mode .anime-tag:hover .tag-img-wrap,
 .custom-tier-body.img-mode .anime-tag:hover .tag-img-wrap {
-  transform: scale(1.06); box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  transform: scale(1.06);
+  box-shadow: 0 var(--card-shadow-blur) calc(var(--card-shadow-blur) * 2.5) rgba(0,0,0,0.5);
 }
 .tier-body.img-mode .anime-tag img,
 .custom-tier-body.img-mode .anime-tag img {
-  width: 100%; height: 100%; object-fit: cover; object-position: top; display: block;
+  width: 100%; height: 100%;
+  object-fit: var(--card-img-fit);
+  object-position: var(--card-img-pos);
+  display: block;
 }
 .tier-body.img-mode .anime-tag .no-img-box,
 .custom-tier-body.img-mode .anime-tag .no-img-box {
