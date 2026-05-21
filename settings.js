@@ -199,8 +199,52 @@ function buildSettingsDynamicContent() {
     <!-- RESET -->
     <div class="settings-section">
       <h2>Sıfırla</h2>
-      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.7;">Seçili listenin renk, font, şeffaflık ve arka plan ayarlarını sıfırlar. Animeler ve özel katmanlar korunur.</p>
-      <button class="btn-reset-default" onclick="confirmResetDefaults()">↺ &nbsp;Varsayılan Ayarlara Dön</button>
+      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.7;">
+        Seçili listenin ayarlarını seçerek ya da tamamen sıfırlayabilirsin.
+      </p>
+
+      <!-- Seçici sıfırlama grupları -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.9rem;">
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('colors')">
+          🎨 Renkleri Sıfırla
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('font')">
+          🔤 Font & Boyutu Sıfırla
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('opacity')">
+          🔆 Şeffaflıkları Sıfırla
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('card')">
+          🃏 Kart & Poster Sıfırla
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('tags')">
+          🏷 Etiket Ayarları Sıfırla
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('bg')">
+          🖼 Arka Planı Temizle
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('anim')">
+          ⚡ Animasyonları Sıfırla
+        </button>
+        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
+          onclick="confirmResetGroup('layout')">
+          📐 Layout Ayarlarını Sıfırla
+        </button>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:0.8rem;">
+        <button class="btn-reset-default" onclick="confirmResetDefaults()">↺ &nbsp;Tümünü Varsayılana Döndür</button>
+        <div style="font-size:0.5rem;color:var(--muted);margin-top:0.5rem;opacity:0.7;line-height:1.6;">
+          Animeler, özel katmanlar ve özel alanlar korunur. Sadece görünüm ayarları sıfırlanır.
+        </div>
+      </div>
     </div>
 
     <!-- KART & GÖRÜNÜM -->
@@ -700,6 +744,42 @@ function confirmResetDefaults() {
     _settingsDraft = null; saveData(true); loadSettingsUI(AppState.settingsListId);
     const bar = document.getElementById('settings-save-bar'); if (bar) bar.style.display = 'none';
   });
+}
+
+function confirmResetGroup(group) {
+  const groupNames = {
+    colors:  'Renkler (arka plan, kart, vurgu…)',
+    font:    'Font & yazı boyutu',
+    opacity: 'Tüm şeffaflık değerleri',
+    card:    'Kart & poster boyutu, gölge, hover efekti',
+    tags:    'Etiket şekli, dolgu ve genel tag ayarları',
+    bg:      'Arka plan görseli',
+    anim:    'Animasyon geçiş hızı',
+    layout:  'Katman boşluğu ve sıralama modu',
+  };
+  showConfirm('Sıfırla: ' + (groupNames[group] || group),
+    '"' + (groupNames[group] || group) + '" ayarları varsayılana dönecek. Devam et?',
+    () => {
+      const l = getList(AppState.settingsListId); if (!l) return;
+      if (!l.settings) l.settings = {};
+      const D = DEFAULT_SETTINGS;
+      const keySets = {
+        colors:  ['col-bg','col-surface','col-card','col-border','col-text','col-accent'],
+        font:    ['font','fontSize'],
+        opacity: ['op-nav','op-modal','op-card','op-surface','op-border','op-tag','ui-sat','ui-bri','bgOpacity'],
+        card:    ['cardRadius','cardWidth','cardHeight','cardShadow','cardHoverBright','cardHoverLift','cardImgPos','cardImgFit'],
+        tags:    ['tagShapeGlobal','tagPadX','tagPadY'],
+        bg:      ['bgImg','bgOpacity'],
+        anim:    ['transitionSpeed'],
+        layout:  ['tierGap','sortMode'],
+      };
+      const keys = keySets[group] || [];
+      keys.forEach(k => { l.settings[k] = D[k]; });
+      if (group === 'bg') l.settings.bgImg = null;
+      _settingsDraft = null; saveData(true); loadSettingsUI(AppState.settingsListId);
+      const bar = document.getElementById('settings-save-bar'); if (bar) bar.style.display = 'none';
+    }
+  );
 }
 
 // ─────────────────────────────────────────

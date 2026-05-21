@@ -43,13 +43,78 @@ function openForm(id) {
     AppState.formTagColor = e.tagColor || null;
     updateFormImgPreview();
     if (e.tagColor) document.getElementById('f-tagcolor').value = e.tagColor;
+
+    // Etiket alanları
     const satEl = document.getElementById('f-tagsat'), satValEl = document.getElementById('f-tagsat-val');
     if (satEl) { satEl.value = e.tagSat !== undefined ? e.tagSat : 100; if (satValEl) satValEl.textContent = satEl.value; }
     const sizeEl = document.getElementById('f-tagsize'), sizeValEl = document.getElementById('f-tagsize-val');
     if (sizeEl) { sizeEl.value = e.tagSize !== undefined ? e.tagSize : 0.65; if (sizeValEl) sizeValEl.textContent = parseFloat(sizeEl.value).toFixed(2); }
     const shapeEl = document.getElementById('f-tagshape');
     if (shapeEl) shapeEl.value = e.tagShapeOverride || '';
-    if (e.tagColor || e.tagSat !== undefined || e.tagSize !== undefined || e.tagShapeOverride) {
+    const briEl = document.getElementById('f-tagbri'), briValEl = document.getElementById('f-tagbri-val');
+    if (briEl) { briEl.value = e.tagBri !== undefined ? e.tagBri : 100; if (briValEl) briValEl.textContent = briEl.value; }
+    const opacityEl = document.getElementById('f-tagopacity'), opacityValEl = document.getElementById('f-tagopacity-val');
+    if (opacityEl) { opacityEl.value = e.tagOpacity !== undefined ? e.tagOpacity : 100; if (opacityValEl) opacityValEl.textContent = opacityEl.value; }
+    const borderEl = document.getElementById('f-tagborder'), borderValEl = document.getElementById('f-tagborder-val');
+    if (borderEl) { borderEl.value = e.tagBorderWidth !== undefined ? e.tagBorderWidth : 1; if (borderValEl) borderValEl.textContent = borderEl.value; }
+    const boldEl = document.getElementById('f-tagbold');
+    if (boldEl) boldEl.checked = e.tagBold || false;
+    const italicEl = document.getElementById('f-tagitalic');
+    if (italicEl) italicEl.checked = e.tagItalic || false;
+    // Glow
+    const glowEl = document.getElementById('f-tagglow'), glowWrap = document.getElementById('f-tagglow-wrap');
+    const glowIntEl = document.getElementById('f-tagglowint'), glowIntVal = document.getElementById('f-tagglowint-val');
+    if (glowEl) { glowEl.checked = e.tagGlow || false; if (glowWrap) glowWrap.style.display = e.tagGlow ? 'block' : 'none'; }
+    if (glowIntEl) { glowIntEl.value = e.tagGlowIntensity !== undefined ? e.tagGlowIntensity : 6; if (glowIntVal) glowIntVal.textContent = glowIntEl.value; }
+    // Tag BG override
+    const tagBgEl = document.getElementById('f-tagbg'), tagBgEnabled = document.getElementById('f-tagbg-enabled');
+    if (tagBgEl) tagBgEl.value = e.tagBgColor || '#131320';
+    if (tagBgEnabled) tagBgEnabled.checked = !!e.tagBgColor;
+
+    // Poster alanları
+    const posteroverlayEnabled = document.getElementById('f-posteroverlay-enabled');
+    const posteroverlayWrap = document.getElementById('f-posteroverlay-wrap');
+    const posteroverlayEl = document.getElementById('f-posteroverlay');
+    const posteroverlayOpEl = document.getElementById('f-posteroverlayop'), posteroverlayOpVal = document.getElementById('f-posteroverlayop-val');
+    if (posteroverlayEnabled) { posteroverlayEnabled.checked = !!e.posterOverlayColor; if (posteroverlayWrap) posteroverlayWrap.style.display = e.posterOverlayColor ? 'block' : 'none'; }
+    if (posteroverlayEl) posteroverlayEl.value = e.posterOverlayColor || '#000000';
+    if (posteroverlayOpEl) { posteroverlayOpEl.value = e.posterOverlayOpacity !== undefined ? e.posterOverlayOpacity : 20; if (posteroverlayOpVal) posteroverlayOpVal.textContent = posteroverlayOpEl.value; }
+    const posterblurEl = document.getElementById('f-posterblur'), posterblurVal = document.getElementById('f-posterblur-val');
+    if (posterblurEl) { posterblurEl.value = e.posterBlur !== undefined ? e.posterBlur : 0; if (posterblurVal) posterblurVal.textContent = posterblurEl.value; }
+    const postersatEl = document.getElementById('f-postersat'), postersatVal = document.getElementById('f-postersat-val');
+    if (postersatEl) { postersatEl.value = e.posterSat !== undefined ? e.posterSat : 100; if (postersatVal) postersatVal.textContent = postersatEl.value; }
+    const posterbriEl = document.getElementById('f-posterbri'), posterbriVal = document.getElementById('f-posterbri-val');
+    if (posterbriEl) { posterbriEl.value = e.posterBri !== undefined ? e.posterBri : 100; if (posterbriVal) posterbriVal.textContent = posterbriEl.value; }
+    const postercontrastEl = document.getElementById('f-postercontrast'), postercontrastVal = document.getElementById('f-postercontrast-val');
+    if (postercontrastEl) { postercontrastEl.value = e.posterContrast !== undefined ? e.posterContrast : 100; if (postercontrastVal) postercontrastVal.textContent = postercontrastEl.value; }
+    const posterhueEl = document.getElementById('f-posterhue'), posterhueVal = document.getElementById('f-posterhue-val');
+    if (posterhueEl) { posterhueEl.value = e.posterHue !== undefined ? e.posterHue : 0; if (posterhueVal) posterhueVal.textContent = posterhueEl.value; }
+    const posterSepiaEl = document.getElementById('f-postersepia');
+    if (posterSepiaEl) posterSepiaEl.checked = e.posterSepia || false;
+    const posterInvertEl = document.getElementById('f-posterinvert');
+    if (posterInvertEl) posterInvertEl.checked = e.posterInvert || false;
+    const posterposEl = document.getElementById('f-posterpos');
+    if (posterposEl) posterposEl.value = e.posterImgPos || '';
+    const posterfitEl = document.getElementById('f-posterfit');
+    if (posterfitEl) posterfitEl.value = e.posterImgFit || '';
+    const postersizeEnabled = document.getElementById('f-postersize-enabled'), postersizeWrap = document.getElementById('f-postersize-wrap');
+    const posterwEl = document.getElementById('f-posterw'), posterwVal = document.getElementById('f-posterw-val');
+    const posterhEl = document.getElementById('f-posterh'), posterhVal = document.getElementById('f-posterh-val');
+    const hasPosterSize = e.posterWidth !== undefined || e.posterHeight !== undefined;
+    if (postersizeEnabled) { postersizeEnabled.checked = hasPosterSize; if (postersizeWrap) postersizeWrap.style.display = hasPosterSize ? 'block' : 'none'; }
+    if (posterwEl) { posterwEl.value = e.posterWidth || 80; if (posterwVal) posterwVal.textContent = posterwEl.value; }
+    if (posterhEl) { posterhEl.value = e.posterHeight || 112; if (posterhVal) posterhVal.textContent = posterhEl.value; }
+    const posteropacityEl = document.getElementById('f-posteropacity'), posteropacityVal = document.getElementById('f-posteropacity-val');
+    if (posteropacityEl) { posteropacityEl.value = e.posterOpacity !== undefined ? e.posterOpacity : 100; if (posteropacityVal) posteropacityVal.textContent = posteropacityEl.value; }
+
+    const hasAdvanced = e.tagColor || e.tagSat !== undefined || e.tagSize !== undefined || e.tagShapeOverride ||
+      e.tagBri !== undefined || e.tagOpacity !== undefined || e.tagBorderWidth !== undefined ||
+      e.tagBold || e.tagItalic || e.tagGlow || e.tagBgColor ||
+      e.posterOverlayColor || e.posterBlur !== undefined || e.posterSat !== undefined ||
+      e.posterBri !== undefined || e.posterContrast !== undefined || e.posterHue !== undefined ||
+      e.posterSepia || e.posterInvert || e.posterImgPos || e.posterImgFit ||
+      e.posterWidth || e.posterHeight || e.posterOpacity !== undefined;
+    if (hasAdvanced) {
       _entryAdvOpen = true;
       if (advPanel) advPanel.style.display = 'block';
       if (advArrow) advArrow.textContent = '▼';
@@ -63,9 +128,39 @@ function openForm(id) {
     document.getElementById('img-label').style.display = 'block';
     document.getElementById('score-preview').innerHTML = '';
     document.getElementById('f-tagcolor').value = '#e040fb';
-    const satEl  = document.getElementById('f-tagsat');  if (satEl)  { satEl.value  = 100;  const sv = document.getElementById('f-tagsat-val');  if (sv) sv.textContent = '100'; }
-    const sizeEl = document.getElementById('f-tagsize'); if (sizeEl) { sizeEl.value = 0.65; const sv = document.getElementById('f-tagsize-val'); if (sv) sv.textContent = '0.65'; }
+    // Reset etiket alanları
+    const _r = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    const _rv = (id, vid, val, fmt) => { const el = document.getElementById(id); if (el) { el.value = val; const v = document.getElementById(vid); if (v) v.textContent = fmt ? fmt(val) : val; } };
+    _rv('f-tagsat','f-tagsat-val',100);
+    _rv('f-tagsize','f-tagsize-val',0.65, v => parseFloat(v).toFixed(2));
+    _rv('f-tagbri','f-tagbri-val',100);
+    _rv('f-tagopacity','f-tagopacity-val',100);
+    _rv('f-tagborder','f-tagborder-val',1);
     const shapeEl = document.getElementById('f-tagshape'); if (shapeEl) shapeEl.value = '';
+    const boldEl = document.getElementById('f-tagbold'); if (boldEl) boldEl.checked = false;
+    const italicEl = document.getElementById('f-tagitalic'); if (italicEl) italicEl.checked = false;
+    const glowEl = document.getElementById('f-tagglow'); if (glowEl) glowEl.checked = false;
+    const glowWrap = document.getElementById('f-tagglow-wrap'); if (glowWrap) glowWrap.style.display = 'none';
+    _rv('f-tagglowint','f-tagglowint-val',6);
+    const tagBgEnabled = document.getElementById('f-tagbg-enabled'); if (tagBgEnabled) tagBgEnabled.checked = false;
+    // Reset poster alanları
+    const poe = document.getElementById('f-posteroverlay-enabled'); if (poe) poe.checked = false;
+    const pow = document.getElementById('f-posteroverlay-wrap'); if (pow) pow.style.display = 'none';
+    _rv('f-posteroverlayop','f-posteroverlayop-val',20);
+    _rv('f-posterblur','f-posterblur-val',0);
+    _rv('f-postersat','f-postersat-val',100);
+    _rv('f-posterbri','f-posterbri-val',100);
+    _rv('f-postercontrast','f-postercontrast-val',100);
+    _rv('f-posterhue','f-posterhue-val',0);
+    const sepiaEl = document.getElementById('f-postersepia'); if (sepiaEl) sepiaEl.checked = false;
+    const invertEl = document.getElementById('f-posterinvert'); if (invertEl) invertEl.checked = false;
+    const posterposEl = document.getElementById('f-posterpos'); if (posterposEl) posterposEl.value = '';
+    const posterfitEl = document.getElementById('f-posterfit'); if (posterfitEl) posterfitEl.value = '';
+    const psizeEnabled = document.getElementById('f-postersize-enabled'); if (psizeEnabled) psizeEnabled.checked = false;
+    const psizeWrap = document.getElementById('f-postersize-wrap'); if (psizeWrap) psizeWrap.style.display = 'none';
+    _rv('f-posterw','f-posterw-val',80);
+    _rv('f-posterh','f-posterh-val',112);
+    _rv('f-posteropacity','f-posteropacity-val',100);
     renderTagSwatch();
   }
 
@@ -376,6 +471,33 @@ function saveEntry() {
   const satEl   = document.getElementById('f-tagsat');  const tagSat = satEl   ? parseInt(satEl.value)   : 100;
   const sizeEl  = document.getElementById('f-tagsize'); const tagSize = sizeEl ? parseFloat(sizeEl.value) : 0.65;
   const shapeEl = document.getElementById('f-tagshape'); const tagShapeOverride = shapeEl ? (shapeEl.value || null) : null;
+  // Yeni etiket alanları
+  const briEl    = document.getElementById('f-tagbri');     const tagBri = briEl ? parseInt(briEl.value) : 100;
+  const opEl     = document.getElementById('f-tagopacity'); const tagOpacity = opEl ? parseInt(opEl.value) : 100;
+  const borderEl = document.getElementById('f-tagborder');  const tagBorderWidth = borderEl ? parseFloat(borderEl.value) : 1;
+  const boldEl   = document.getElementById('f-tagbold');    const tagBold = boldEl ? boldEl.checked : false;
+  const italicEl = document.getElementById('f-tagitalic');  const tagItalic = italicEl ? italicEl.checked : false;
+  const glowEl   = document.getElementById('f-tagglow');    const tagGlow = glowEl ? glowEl.checked : false;
+  const glowIntEl= document.getElementById('f-tagglowint'); const tagGlowIntensity = glowIntEl ? parseInt(glowIntEl.value) : 6;
+  const tagBgEnabledEl = document.getElementById('f-tagbg-enabled');
+  const tagBgEl  = document.getElementById('f-tagbg');      const tagBgColor = (tagBgEnabledEl && tagBgEnabledEl.checked && tagBgEl) ? tagBgEl.value : null;
+  // Poster alanları
+  const poeEl   = document.getElementById('f-posteroverlay-enabled');
+  const povEl   = document.getElementById('f-posteroverlay');     const posterOverlayColor = (poeEl && poeEl.checked && povEl) ? povEl.value : null;
+  const popEl   = document.getElementById('f-posteroverlayop');   const posterOverlayOpacity = popEl ? parseInt(popEl.value) : 20;
+  const pblEl   = document.getElementById('f-posterblur');        const posterBlur = pblEl ? parseFloat(pblEl.value) : 0;
+  const psatEl  = document.getElementById('f-postersat');         const posterSat = psatEl ? parseInt(psatEl.value) : 100;
+  const pbriEl  = document.getElementById('f-posterbri');         const posterBri = pbriEl ? parseInt(pbriEl.value) : 100;
+  const pconEl  = document.getElementById('f-postercontrast');    const posterContrast = pconEl ? parseInt(pconEl.value) : 100;
+  const phueEl  = document.getElementById('f-posterhue');         const posterHue = phueEl ? parseInt(phueEl.value) : 0;
+  const psepEl  = document.getElementById('f-postersepia');       const posterSepia = psepEl ? psepEl.checked : false;
+  const pinvEl  = document.getElementById('f-posterinvert');      const posterInvert = pinvEl ? pinvEl.checked : false;
+  const pposEl  = document.getElementById('f-posterpos');         const posterImgPos = pposEl ? (pposEl.value || null) : null;
+  const pfitEl  = document.getElementById('f-posterfit');         const posterImgFit = pfitEl ? (pfitEl.value || null) : null;
+  const psizeEnabledEl = document.getElementById('f-postersize-enabled');
+  const pwEl    = document.getElementById('f-posterw');           const posterWidth = (psizeEnabledEl && psizeEnabledEl.checked && pwEl) ? parseInt(pwEl.value) : undefined;
+  const phEl    = document.getElementById('f-posterh');           const posterHeight = (psizeEnabledEl && psizeEnabledEl.checked && phEl) ? parseInt(phEl.value) : undefined;
+  const popacityEl = document.getElementById('f-posteropacity');  const posterOpacity = popacityEl ? parseInt(popacityEl.value) : 100;
   const customFieldValues = collectCustomFieldValues();
 
   const entryData = {
@@ -383,6 +505,12 @@ function saveEntry() {
     img: AppState.formImg, tagColor: AppState.formTagColor || null,
     customLayers: [...AppState.formLayerIds],
     tagSat, tagSize, tagShapeOverride,
+    tagBri, tagOpacity, tagBorderWidth, tagBold, tagItalic,
+    tagGlow, tagGlowIntensity, tagBgColor,
+    posterOverlayColor, posterOverlayOpacity, posterBlur,
+    posterSat, posterBri, posterContrast, posterHue,
+    posterSepia, posterInvert, posterImgPos, posterImgFit,
+    posterWidth, posterHeight, posterOpacity,
     customFieldValues,
   };
 
@@ -416,6 +544,27 @@ function updateScorePreview() {
 //  TAG COLOR
 // ─────────────────────────────────────────
 function onTagColorPick()  { AppState.formTagColor = document.getElementById('f-tagcolor').value; renderTagSwatch(); }
+function onTagBgPick()     { /* değer zaten input'ta, kayıt sırasında okunur */ }
+function onTagBgEnabledChange() { /* checkbox onChange, kayıt sırasında kontrol edilir */ }
+function clearTagBg() {
+  const el = document.getElementById('f-tagbg-enabled'); if (el) el.checked = false;
+  const bg = document.getElementById('f-tagbg'); if (bg) bg.value = '#131320';
+}
+function onTagGlowChange() {
+  const glowEl = document.getElementById('f-tagglow');
+  const wrap = document.getElementById('f-tagglow-wrap');
+  if (wrap) wrap.style.display = glowEl && glowEl.checked ? 'block' : 'none';
+}
+function onPosterOverlayChange() {
+  const el = document.getElementById('f-posteroverlay-enabled');
+  const wrap = document.getElementById('f-posteroverlay-wrap');
+  if (wrap) wrap.style.display = el && el.checked ? 'block' : 'none';
+}
+function onPosterSizeChange() {
+  const el = document.getElementById('f-postersize-enabled');
+  const wrap = document.getElementById('f-postersize-wrap');
+  if (wrap) wrap.style.display = el && el.checked ? 'block' : 'none';
+}
 function randomTagColor()  {
   const h = Math.floor(Math.random() * 360), s = Math.floor(60 + Math.random() * 30), l = Math.floor(50 + Math.random() * 20);
   AppState.formTagColor = hslToHex(h, s, l);

@@ -239,8 +239,12 @@
           <span>Etiket Görünümü (gelişmiş)</span>
         </div>
         <div class="entry-adv-panel" id="entry-adv-panel" style="display:none;">
+
+          <!-- ── ETİKET BÖLÜMÜ ── -->
+          <div style="font-size:0.58rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;font-weight:700;padding:0.3rem 0 0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.7rem;">🏷 Etiket Özelleştirme</div>
+
           <!-- Tag Rengi -->
-          <div>
+          <div style="margin-bottom:0.6rem;">
             <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem;">Etiket Rengi</div>
             <div class="tag-color-row">
               <input type="color" class="tag-color-input" id="f-tagcolor" value="#e040fb" oninput="onTagColorPick()">
@@ -249,8 +253,24 @@
             </div>
             <div id="tag-color-swatches" style="margin-top:0.35rem;display:flex;align-items:center;gap:0.4rem;"></div>
           </div>
+
+          <!-- Tag Arka Plan Rengi (override) -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Etiket Arka Plan Rengi <span style="opacity:0.5;font-size:0.55rem;">(varsayılan: otomatik)</span></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input type="color" id="f-tagbg" value="#131320"
+                style="width:36px;height:28px;padding:2px;border:1px solid var(--border);background:var(--card);border-radius:2px;cursor:pointer;"
+                oninput="onTagBgPick()">
+              <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.62rem;color:var(--muted);cursor:pointer;">
+                <input type="checkbox" id="f-tagbg-enabled" style="accent-color:var(--accent);width:12px;height:12px;" onchange="onTagBgEnabledChange()">
+                Özel arka plan kullan
+              </label>
+              <button onclick="clearTagBg()" style="background:transparent;border:1px solid #ff444460;color:#ff6060;font-family:inherit;font-size:0.55rem;padding:0.15rem 0.4rem;border-radius:2px;cursor:pointer;margin-left:auto;">✕</button>
+            </div>
+          </div>
+
           <!-- Tag Doygunluk -->
-          <div>
+          <div style="margin-bottom:0.6rem;">
             <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
               Etiket Doygunluğu — <span id="f-tagsat-val">100</span>%
             </div>
@@ -258,28 +278,243 @@
               style="width:100%;accent-color:var(--accent);"
               oninput="document.getElementById('f-tagsat-val').textContent=this.value">
           </div>
+
+          <!-- Tag Parlaklık -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Etiket Parlaklığı — <span id="f-tagbri-val">100</span>%
+            </div>
+            <input type="range" id="f-tagbri" min="20" max="200" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-tagbri-val').textContent=this.value">
+          </div>
+
+          <!-- Tag Opacity -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Etiket Saydamlığı — <span id="f-tagopacity-val">100</span>%
+            </div>
+            <input type="range" id="f-tagopacity" min="10" max="100" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-tagopacity-val').textContent=this.value">
+          </div>
+
           <!-- Tag Boyutu -->
-          <div>
+          <div style="margin-bottom:0.6rem;">
             <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
               Etiket Boyutu — <span id="f-tagsize-val">0.65</span>rem
             </div>
-            <input type="range" id="f-tagsize" min="0.4" max="1.2" step="0.05" value="0.65"
+            <input type="range" id="f-tagsize" min="0.4" max="1.4" step="0.05" value="0.65"
               style="width:100%;accent-color:var(--accent);"
               oninput="document.getElementById('f-tagsize-val').textContent=parseFloat(this.value).toFixed(2)">
           </div>
+
+          <!-- Tag Kenarlık Kalınlığı -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Kenarlık Kalınlığı — <span id="f-tagborder-val">1</span>px
+            </div>
+            <input type="range" id="f-tagborder" min="0" max="4" step="0.5" value="1"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-tagborder-val').textContent=this.value">
+          </div>
+
           <!-- Tag Şekli (override) -->
-          <div>
+          <div style="margin-bottom:0.6rem;">
             <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Etiket Şekli (override)</div>
             <select id="f-tagshape"
               style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;cursor:pointer;">
               <option value="">— Katman Varsayılanı —</option>
-              <option value="0px">Keskin</option>
+              <option value="0px">Keskin (0px)</option>
               <option value="2px">Hafif (2px)</option>
               <option value="4px">Yuvarlak (4px)</option>
               <option value="8px">Daha Yuvarlak (8px)</option>
+              <option value="12px">Çok Yuvarlak (12px)</option>
               <option value="50px">Hap</option>
               <option value="50%">Tam Yuvarlak</option>
             </select>
+          </div>
+
+          <!-- Tag Glow Efekti -->
+          <div style="margin-bottom:0.6rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.62rem;color:var(--muted);cursor:pointer;margin-bottom:0.35rem;">
+              <input type="checkbox" id="f-tagglow" style="accent-color:var(--accent);width:12px;height:12px;" onchange="onTagGlowChange()">
+              ✨ Etiket Glow Efekti
+            </label>
+            <div id="f-tagglow-wrap" style="display:none;">
+              <div style="font-size:0.6rem;color:var(--muted);margin-bottom:0.25rem;">Yoğunluk — <span id="f-tagglowint-val">6</span>px</div>
+              <input type="range" id="f-tagglowint" min="2" max="20" value="6"
+                style="width:100%;accent-color:var(--accent);"
+                oninput="document.getElementById('f-tagglowint-val').textContent=this.value">
+            </div>
+          </div>
+
+          <!-- Tag Yazı Kalın -->
+          <div style="margin-bottom:0.6rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.62rem;color:var(--muted);cursor:pointer;">
+              <input type="checkbox" id="f-tagbold" style="accent-color:var(--accent);width:12px;height:12px;">
+              𝗕 Kalın Yazı
+            </label>
+          </div>
+
+          <!-- Tag İtalik -->
+          <div style="margin-bottom:0.8rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.62rem;color:var(--muted);cursor:pointer;">
+              <input type="checkbox" id="f-tagitalic" style="accent-color:var(--accent);width:12px;height:12px;">
+              𝘐 İtalik Yazı
+            </label>
+          </div>
+
+          <!-- ── POSTER BÖLÜMÜ ── -->
+          <div style="font-size:0.58rem;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;font-weight:700;padding:0.3rem 0 0.5rem;border-bottom:1px solid var(--border);margin-bottom:0.7rem;">🖼 Poster Özelleştirme</div>
+
+          <!-- Poster Overlay Rengi -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Poster Overlay Rengi</div>
+            <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+              <input type="color" id="f-posteroverlay" value="#000000"
+                style="width:36px;height:28px;padding:2px;border:1px solid var(--border);background:var(--card);border-radius:2px;cursor:pointer;">
+              <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.62rem;color:var(--muted);cursor:pointer;">
+                <input type="checkbox" id="f-posteroverlay-enabled" style="accent-color:var(--accent);width:12px;height:12px;" onchange="onPosterOverlayChange()">
+                Özel overlay kullan
+              </label>
+            </div>
+            <div id="f-posteroverlay-wrap" style="display:none;margin-top:0.4rem;">
+              <div style="font-size:0.6rem;color:var(--muted);margin-bottom:0.25rem;">Overlay Opaklığı — <span id="f-posteroverlayop-val">20</span>%</div>
+              <input type="range" id="f-posteroverlayop" min="0" max="90" value="20"
+                style="width:100%;accent-color:var(--accent);"
+                oninput="document.getElementById('f-posteroverlayop-val').textContent=this.value">
+            </div>
+          </div>
+
+          <!-- Poster Blur -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Poster Blur — <span id="f-posterblur-val">0</span>px
+            </div>
+            <input type="range" id="f-posterblur" min="0" max="10" step="0.5" value="0"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-posterblur-val').textContent=this.value">
+          </div>
+
+          <!-- Poster Doygunluk -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Poster Doygunluğu — <span id="f-postersat-val">100</span>%
+            </div>
+            <input type="range" id="f-postersat" min="0" max="200" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-postersat-val').textContent=this.value">
+          </div>
+
+          <!-- Poster Parlaklık -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Poster Parlaklığı — <span id="f-posterbri-val">100</span>%
+            </div>
+            <input type="range" id="f-posterbri" min="20" max="200" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-posterbri-val').textContent=this.value">
+          </div>
+
+          <!-- Poster Kontrast -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Poster Kontrast — <span id="f-postercontrast-val">100</span>%
+            </div>
+            <input type="range" id="f-postercontrast" min="50" max="200" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-postercontrast-val').textContent=this.value">
+          </div>
+
+          <!-- Poster Ton (Hue Rotate) -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Renk Tonu — <span id="f-posterhue-val">0</span>°
+            </div>
+            <input type="range" id="f-posterhue" min="0" max="360" value="0"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-posterhue-val').textContent=this.value">
+          </div>
+
+          <!-- Poster Sepia -->
+          <div style="margin-bottom:0.6rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.62rem;color:var(--muted);cursor:pointer;margin-bottom:0.25rem;">
+              <input type="checkbox" id="f-postersepia" style="accent-color:var(--accent);width:12px;height:12px;">
+              🟤 Sepia Efekti
+            </label>
+          </div>
+
+          <!-- Poster Invert -->
+          <div style="margin-bottom:0.6rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.62rem;color:var(--muted);cursor:pointer;">
+              <input type="checkbox" id="f-posterinvert" style="accent-color:var(--accent);width:12px;height:12px;">
+              🔄 Renkleri Tersine Çevir
+            </label>
+          </div>
+
+          <!-- Poster Kırpma Pozisyonu (override) -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Poster Kırpma Pozisyonu (override)</div>
+            <select id="f-posterpos"
+              style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;cursor:pointer;">
+              <option value="">— Ayar Varsayılanı —</option>
+              <option value="top">Üstten</option>
+              <option value="center">Ortadan</option>
+              <option value="bottom">Alttan</option>
+              <option value="left">Soldan</option>
+              <option value="right">Sağdan</option>
+            </select>
+          </div>
+
+          <!-- Poster Fit (override) -->
+          <div style="margin-bottom:0.6rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">Poster Sığdırma Modu (override)</div>
+            <select id="f-posterfit"
+              style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.75rem;padding:0.35rem 0.5rem;border-radius:2px;outline:none;cursor:pointer;">
+              <option value="">— Ayar Varsayılanı —</option>
+              <option value="cover">Cover (doldur)</option>
+              <option value="contain">Contain (tam göster)</option>
+              <option value="fill">Fill (esneyerek doldur)</option>
+            </select>
+          </div>
+
+          <!-- Poster Boyutu (override) -->
+          <div style="margin-bottom:0.6rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.62rem;color:var(--muted);cursor:pointer;margin-bottom:0.35rem;">
+              <input type="checkbox" id="f-postersize-enabled" style="accent-color:var(--accent);width:12px;height:12px;" onchange="onPosterSizeChange()">
+              Özel Poster Boyutu
+            </label>
+            <div id="f-postersize-wrap" style="display:none;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                <div>
+                  <div style="font-size:0.58rem;color:var(--muted);margin-bottom:0.2rem;">Genişlik — <span id="f-posterw-val">80</span>px</div>
+                  <input type="range" id="f-posterw" min="40" max="220" step="4" value="80"
+                    style="width:100%;accent-color:var(--accent);"
+                    oninput="document.getElementById('f-posterw-val').textContent=this.value">
+                </div>
+                <div>
+                  <div style="font-size:0.58rem;color:var(--muted);margin-bottom:0.2rem;">Yükseklik — <span id="f-posterh-val">112</span>px</div>
+                  <input type="range" id="f-posterh" min="56" max="300" step="4" value="112"
+                    style="width:100%;accent-color:var(--accent);"
+                    oninput="document.getElementById('f-posterh-val').textContent=this.value">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Poster Şeffaflığı -->
+          <div style="margin-bottom:0.8rem;">
+            <div style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.3rem;">
+              Poster Saydamlığı — <span id="f-posteropacity-val">100</span>%
+            </div>
+            <input type="range" id="f-posteropacity" min="10" max="100" value="100"
+              style="width:100%;accent-color:var(--accent);"
+              oninput="document.getElementById('f-posteropacity-val').textContent=this.value">
+          </div>
+
+          <div style="font-size:0.5rem;color:var(--muted);opacity:0.6;margin-top:0.3rem;line-height:1.6;">
+            💡 Entry'de girilen özelleştirmeler, ayarlardaki genel değerlerin üzerinde önceliklidir.
           </div>
         </div>
       </div>

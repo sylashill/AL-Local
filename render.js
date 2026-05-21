@@ -466,24 +466,105 @@ function renderTierPage(rebuildSearchBar = true) {
 function buildTag(e, defaultColor, listId, shape) {
   const color = e.tagColor || defaultColor;
   const tag   = document.createElement('div'); tag.className = 'anime-tag';
+
+  // Renk: entry > katman rengi
+  const borderW = e.tagBorderWidth !== undefined ? e.tagBorderWidth : 1;
   tag.style.borderColor = color + '50';
   tag.style.color       = color + 'cc';
-  tag.style.background  = color + '0a';
-  // shape: per-tier tagShape > entry override > global CSS var (CSS handles default)
+
+  // Arka plan: tagBgColor override varsa onu kullan, yoksa otomatik
+  if (e.tagBgColor) {
+    tag.style.background = e.tagBgColor;
+  } else {
+    tag.style.background = color + '0a';
+  }
+
+  // Kenarlık kalınlığı
+  if (borderW !== 1) tag.style.borderWidth = borderW + 'px';
+
+  // Şekil: entry override > tier tagShape > global CSS var
   const finalShape = e.tagShapeOverride || shape || null;
   if (finalShape) tag.style.borderRadius = finalShape;
-  // else CSS --tag-shape-global applies via .anime-tag { border-radius: var(--tag-shape-global) }
-  const tagSat  = e.tagSat  !== undefined ? e.tagSat  : 100;
+
+  // Boyut: entry > varsayılan
   const tagSize = e.tagSize !== undefined ? e.tagSize : 0.65;
-  if (tagSat !== 100) tag.style.filter   = `saturate(${tagSat}%)`;
   if (tagSize !== 0.65) tag.style.fontSize = tagSize + 'rem';
+
+  // Kalın / İtalik
+  if (e.tagBold)   tag.style.fontWeight = '700';
+  if (e.tagItalic) tag.style.fontStyle  = 'italic';
+
+  // Opacity
+  const tagOpacity = e.tagOpacity !== undefined ? e.tagOpacity : 100;
+  if (tagOpacity !== 100) tag.style.opacity = tagOpacity / 100;
+
+  // CSS filter: sat + bri + glow birleşimi
+  const tagSat  = e.tagSat !== undefined ? e.tagSat : 100;
+  const tagBri  = e.tagBri !== undefined ? e.tagBri : 100;
+  let filterStr = '';
+  if (tagSat !== 100) filterStr += `saturate(${tagSat}%) `;
+  if (tagBri !== 100) filterStr += `brightness(${tagBri}%) `;
+  if (filterStr.trim()) tag.style.filter = filterStr.trim();
+
+  // Glow efekti (box-shadow)
+  if (e.tagGlow) {
+    const gi = e.tagGlowIntensity !== undefined ? e.tagGlowIntensity : 6;
+    tag.style.boxShadow = `0 0 ${gi}px ${Math.round(gi/2)}px ${color}55`;
+  }
+
   tag.addEventListener('click', () => openDetail(e.id, listId));
 
   if (AppState.viewMode === 'img') {
     const wrap = document.createElement('div'); wrap.className = 'tag-img-wrap';
     if (finalShape) wrap.style.borderRadius = finalShape;
+
+    // Poster boyutu override
+    if (e.posterWidth  !== undefined) wrap.style.width  = e.posterWidth  + 'px';
+    if (e.posterHeight !== undefined) wrap.style.height = e.posterHeight + 'px';
+
     if (e.img) {
-      const img = document.createElement('img'); img.src = e.img; img.alt = escHtml(e.name); wrap.appendChild(img);
+      const img = document.createElement('img');
+      img.src = e.img; img.alt = escHtml(e.name);
+
+      // Poster kırpma/fit override
+      if (e.posterImgPos) img.style.objectPosition = e.posterImgPos;
+      if (e.posterImgFit) img.style.objectFit      = e.posterImgFit;
+
+      // Poster opacity
+      const pOpacity = e.posterOpacity !== undefined ? e.posterOpacity : 100;
+      if (pOpacity !== 100) img.style.opacity = pOpacity / 100;
+
+      // Poster CSS filter: blur + sat + bri + contrast + hue + sepia + invert
+      const pBlur     = e.posterBlur     !== undefined ? e.posterBlur     : 0;
+      const pSat      = e.posterSat      !== undefined ? e.posterSat      : 100;
+      const pBri      = e.posterBri      !== undefined ? e.posterBri      : 100;
+      const pContrast = e.posterContrast !== undefined ? e.posterContrast : 100;
+      const pHue      = e.posterHue      !== undefined ? e.posterHue      : 0;
+      let pFilter = '';
+      if (pBlur     !== 0)   pFilter += `blur(${pBlur}px) `;
+      if (pSat      !== 100) pFilter += `saturate(${pSat}%) `;
+      if (pBri      !== 100) pFilter += `brightness(${pBri}%) `;
+      if (pContrast !== 100) pFilter += `contrast(${pContrast}%) `;
+      if (pHue      !== 0)   pFilter += `hue-rotate(${pHue}deg) `;
+      if (e.posterSepia)     pFilter += 'sepia(1) ';
+      if (e.posterInvert)    pFilter += 'invert(1) ';
+      if (pFilter.trim()) img.style.filter = pFilter.trim();
+
+      wrap.appendChild(img);
+
+      // Poster overlay
+      if (e.posterOverlayColor) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position:absolute;inset:0;
+          background:${e.posterOverlayColor};
+          opacity:${(e.posterOverlayOpacity !== undefined ? e.posterOverlayOpacity : 20) / 100};
+          pointer-events:none;border-radius:inherit;
+        `;
+        wrap.style.position = 'relative';
+        wrap.appendChild(overlay);
+      }
+
     } else {
       wrap.innerHTML = `<div class="no-img-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>No Img</span></div>`;
     }
