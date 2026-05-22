@@ -326,7 +326,7 @@ function renderTierPage(rebuildSearchBar = true) {
       if (t.freeLayout) block.dataset.freelayout = 'true';
 
       const hdr = document.createElement('div'); hdr.className = 'custom-tier-hdr';
-      // Bütünleşik mod: compactMode yoksa linkedBanner sadece header+body arası gap sıfırlar
+      // ── Bütünleşik mod: header bölümü için erken kontrol (body bloğundan önce) ──
       const butulesikModAktif = t.linkedBanner && !t.compactMode;
       // headerShape override: linkedBanner aktifse sadece üst köşeler yuvarlak
       const hBRadius = t.tierBorderRadius !== undefined ? t.tierBorderRadius : 4;
@@ -408,11 +408,11 @@ function renderTierPage(rebuildSearchBar = true) {
       const butulesikAktif = t.linkedBanner && !t.compactMode;
 
       // ── Şekil override: linkedBanner aktifse iç birleşim noktaları keskin olmalı ──
-      const bRadius = t.tierBorderRadius !== undefined ? t.tierBorderRadius : 4;
+      const tierBRadius = t.tierBorderRadius !== undefined ? t.tierBorderRadius : 4;
       let bodyShape;
       if (butulesikAktif) {
         // Sadece alt köşeler yuvarlak, üst (birleşim noktası) keskin
-        bodyShape = `0 0 ${bRadius}px ${bRadius}px`;
+        bodyShape = `0 0 ${tierBRadius}px ${tierBRadius}px`;
       } else {
         bodyShape = t.bodyShape || '0px';
       }
