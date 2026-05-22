@@ -318,13 +318,21 @@ function renderTierPage(rebuildSearchBar = true) {
       const borderStyle = bColor
         ? `border-color:rgba(${hexToRgb(bColor)},${bOpacity});`
         : `border-color:rgba(31,31,53,${bOpacity});`;
-      block.style.cssText = `position:relative; border-radius:${bRadius}px; ${borderStyle}`;
+      // Bütünleşik mod aktifken header-body arasındaki boşluğu sıfırla
+      const linkedGapStyle = (t.linkedBanner && !t.compactMode) ? 'gap:0;' : '';
+      block.style.cssText = `position:relative; border-radius:${bRadius}px; ${borderStyle} ${linkedGapStyle}`;
 
       // Serbest konumlandırma attribute'u — ileride editör bu değeri okuyacak
       if (t.freeLayout) block.dataset.freelayout = 'true';
 
       const hdr = document.createElement('div'); hdr.className = 'custom-tier-hdr';
-      const hHeaderShape  = t.headerShape || '0px';
+      // Bütünleşik mod: compactMode yoksa linkedBanner sadece header+body arası gap sıfırlar
+      const butulesikModAktif = t.linkedBanner && !t.compactMode;
+      // headerShape override: linkedBanner aktifse sadece üst köşeler yuvarlak
+      const hBRadius = t.tierBorderRadius !== undefined ? t.tierBorderRadius : 4;
+      const hHeaderShape = butulesikModAktif
+        ? `${hBRadius}px ${hBRadius}px 0 0`
+        : (t.headerShape || '0px');
       const hBannerFull   = t.headerBannerFull || false;
       const hHeight       = t.headerHeight || 45;
       const hMinWidth     = t.headerMinWidth || 0;
@@ -335,7 +343,8 @@ function renderTierPage(rebuildSearchBar = true) {
         min-height:${hHeight}px;
         ${hMinWidth > 0 ? 'width:' + hMinWidth + '%;' : ''}
         justify-content:${t.headerAlign || 'flex-start'};
-        border-radius:${hHeaderShape} ${hHeaderShape} 0 0;
+        border-radius:${hHeaderShape};
+        ${butulesikModAktif ? 'margin-bottom:0;' : ''}
         position:relative;
         overflow:hidden;
       `;
@@ -345,11 +354,14 @@ function renderTierPage(rebuildSearchBar = true) {
         const sat  = t.headerBannerSaturation  !== undefined ? t.headerBannerSaturation  : 100;
         const bri  = t.headerBannerBrightness  !== undefined ? t.headerBannerBrightness  : 100;
         const blur = t.headerBannerBlur        !== undefined ? t.headerBannerBlur        : 0;
+        // Bütünleşik mod aktifken header pozisyonunu orantılı hesapla
+        const hPosX = t.headerBannerPosX !== undefined ? t.headerBannerPosX : 50;
+        const hPosY = t.headerBannerPosY !== undefined ? t.headerBannerPosY : 0;
         hbg.style.cssText = `
           position:absolute;inset:0;z-index:0;
           background-image:url("${t.headerBannerImg}");
           background-size:${t.headerBannerFit || 'cover'};
-          background-position:center;
+          background-position:${hPosX}% ${hPosY}%;
           filter:saturate(${sat}%) brightness(${bri}%) blur(${blur}px);
           pointer-events:none;
         `;
@@ -390,7 +402,21 @@ function renderTierPage(rebuildSearchBar = true) {
       block.appendChild(hdr); block.appendChild(upBtn); block.appendChild(downBtn);
 
       const body = document.createElement('div'); body.className = `custom-tier-body ${viewMode}-mode`;
-      const bodyShape  = t.bodyShape      || '0px';
+
+      // ── Bütünleşik Mod: compactMode aktifse linkedBanner'ı yoksay ──
+      /** @type {boolean} butulesikAktif — linkedBanner ve compactMode çakışmasını çözer */
+      const butulesikAktif = t.linkedBanner && !t.compactMode;
+
+      // ── Şekil override: linkedBanner aktifse iç birleşim noktaları keskin olmalı ──
+      const bRadius = t.tierBorderRadius !== undefined ? t.tierBorderRadius : 4;
+      let bodyShape;
+      if (butulesikAktif) {
+        // Sadece alt köşeler yuvarlak, üst (birleşim noktası) keskin
+        bodyShape = `0 0 ${bRadius}px ${bRadius}px`;
+      } else {
+        bodyShape = t.bodyShape || '0px';
+      }
+
       const bodyMinH   = t.bodyMinHeight  !== undefined ? t.bodyMinHeight : 48;
       const tagGapVal  = t.tagGap         !== undefined ? t.tagGap        : 5;
       body.style.borderRadius = bodyShape;
@@ -413,14 +439,41 @@ function renderTierPage(rebuildSearchBar = true) {
         body.style.paddingRight   = (t.bodyPaddingRight || 0) + 'px';
       }
 
-      if (t.bodyColorReflect && t.color) {
+      // ── bodyColorReflect: linkedBanner aktifse devre dışı ──
+      if (!butulesikAktif && t.bodyColorReflect && t.color) {
         const rgb = hexToRgb(t.color);
         if (rgb && !t.bodyBannerImg) {
           body.style.backgroundColor = `rgba(${rgb},0.06)`;
         }
       }
 
-      if (t.bodyBannerImg) {
+      // ── Body Banner uygulaması ──
+      if (butulesikAktif) {
+        // Bütünleşik mod: header URL'sini ve orantılı pozisyonu kullan
+        const hHeight   = t.headerHeight  !== undefined ? t.headerHeight  : 45;
+        const bMinH     = t.bodyMinHeight  !== undefined ? t.bodyMinHeight  : 48;
+        // bodyBannerPosY = header yüksekliğinin toplam yüksekliğe oranı × 100
+        const bLinkedPosY = (hHeight / (hHeight + bMinH)) * 100;
+        const bLinkedPosX = t.headerBannerPosX !== undefined ? t.headerBannerPosX : 50;
+
+        body.style.position        = 'relative';
+        body.style.backgroundColor = 'transparent'; // bodyColorReflect devre dışı
+        const bodyBg = document.createElement('div');
+        bodyBg.className = 'tier-body-bg';
+        const bFit = t.bodyBannerFit         || 'cover';
+        const bBlur = t.bodyBannerBlur        || 0;
+        const bBri  = t.bodyBannerBrightness  || 100;
+        const bOp   = (t.bodyBannerOpacity !== undefined ? t.bodyBannerOpacity : 40) / 100;
+        bodyBg.style.cssText = `
+          background-image:url("${t.headerBannerImg}");
+          background-size:${bFit === 'repeat' ? 'auto' : bFit};
+          background-repeat:${bFit === 'repeat' ? 'repeat' : 'no-repeat'};
+          background-position:${bLinkedPosX}% ${bLinkedPosY.toFixed(2)}%;
+          filter:blur(${bBlur}px) brightness(${bBri}%);
+          opacity:${bOp};
+        `;
+        body.appendChild(bodyBg);
+      } else if (t.bodyBannerImg) {
         body.style.position        = 'relative';
         body.style.backgroundColor = t.bodyBg || '';
         const bodyBg = document.createElement('div');
@@ -429,11 +482,13 @@ function renderTierPage(rebuildSearchBar = true) {
         const bBlur = t.bodyBannerBlur      || 0;
         const bBri  = t.bodyBannerBrightness || 100;
         const bOp   = (t.bodyBannerOpacity !== undefined ? t.bodyBannerOpacity : 40) / 100;
+        const bPosX = t.bodyBannerPosX !== undefined ? t.bodyBannerPosX : 50;
+        const bPosY = t.bodyBannerPosY !== undefined ? t.bodyBannerPosY : 0;
         bodyBg.style.cssText = `
           background-image:url("${t.bodyBannerImg}");
           background-size:${bFit === 'repeat' ? 'auto' : bFit};
           background-repeat:${bFit === 'repeat' ? 'repeat' : 'no-repeat'};
-          background-position:center;
+          background-position:${bPosX}% ${bPosY}%;
           filter:blur(${bBlur}px) brightness(${bBri}%);
           opacity:${bOp};
         `;

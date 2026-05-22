@@ -140,6 +140,13 @@ function migrateTier(t) {
   if (t.canvasH === undefined)               t.canvasH = 300;
   if (t.headerBox === undefined)             t.headerBox = { x: 0, y: 0, w: 900, h: 60 };
   if (t.bodyBox === undefined)               t.bodyBox   = { x: 0, y: 60, w: 900, h: 240 };
+  // Bütünleşik Banner Hizalama — pozisyon kontrolleri
+  if (t.headerBannerPosX === undefined)      t.headerBannerPosX = 50;
+  if (t.headerBannerPosY === undefined)      t.headerBannerPosY = 0;
+  if (t.bodyBannerPosX === undefined)        t.bodyBannerPosX = 50;
+  if (t.bodyBannerPosY === undefined)        t.bodyBannerPosY = 0;
+  // Bütünleşik Mod toggle
+  if (t.linkedBanner === undefined)          t.linkedBanner = false;
 }
 
 /** localStorage'dan listeleri yükler; eksik alanları migration ile tamamlar. */

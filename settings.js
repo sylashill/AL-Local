@@ -872,7 +872,9 @@ function buildHeaderTab(t, i) {
     <div class="adv-item adv-full-col"><label>Header Banner URL</label>
       <div class="adv-url-row">
         <input type="text" value="${escHtml(t.headerBannerImg || '')}" placeholder="https://..." oninput="updateTierField(${i},'headerBannerImg',this.value)">
-        ${t.headerBannerImg ? `<img class="adv-banner-prev" src="${t.headerBannerImg}" onerror="this.style.display='none'">` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}
+        ${t.headerBannerImg
+          ? `<img class="adv-banner-prev adv-banner-prev--header" id="adv-hprev-${i}" src="${t.headerBannerImg}" style="object-position:${t.headerBannerPosX !== undefined ? t.headerBannerPosX : 50}% ${t.headerBannerPosY !== undefined ? t.headerBannerPosY : 0}%" onerror="this.style.display='none'">`
+          : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}
       </div>
     </div>
     <div class="adv-item adv-full-col"><label><input type="checkbox" ${t.headerBannerFull ? 'checked' : ''} onchange="updateTierField(${i},'headerBannerFull',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;"> &nbsp;Banner tüm header'ı kaplasın</label></div>
@@ -883,6 +885,22 @@ function buildHeaderTab(t, i) {
     <div class="adv-item"><label>Doygunluk — ${t.headerBannerSaturation || 100}%</label><input type="range" min="0" max="200" value="${t.headerBannerSaturation || 100}" oninput="updateTierField(${i},'headerBannerSaturation',parseFloat(this.value));this.previousElementSibling.textContent='Doygunluk — '+this.value+'%'"></div>
     <div class="adv-item"><label>Parlaklık — ${t.headerBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="${t.headerBannerBrightness || 100}" oninput="updateTierField(${i},'headerBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
     <div class="adv-item"><label>Blur — ${t.headerBannerBlur || 0}px</label><input type="range" min="0" max="20" value="${t.headerBannerBlur || 0}" oninput="updateTierField(${i},'headerBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
+    <!-- BANNER POZİSYON — Header -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="font-size:0.5rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;display:block;">📌 Banner Pozisyon (Header)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
+        <div class="adv-item">
+          <label>Yatay (X) — ${t.headerBannerPosX !== undefined ? t.headerBannerPosX : 50}%</label>
+          <input type="range" min="0" max="100" value="${t.headerBannerPosX !== undefined ? t.headerBannerPosX : 50}"
+            oninput="updateBannerPos(${i},'header','X',this.value);this.previousElementSibling.textContent='Yatay (X) — '+this.value+'%'">
+        </div>
+        <div class="adv-item">
+          <label>Dikey (Y) — ${t.headerBannerPosY !== undefined ? t.headerBannerPosY : 0}%</label>
+          <input type="range" min="0" max="100" value="${t.headerBannerPosY !== undefined ? t.headerBannerPosY : 0}"
+            oninput="updateBannerPos(${i},'header','Y',this.value);this.previousElementSibling.textContent='Dikey (Y) — '+this.value+'%'">
+        </div>
+      </div>
+    </div>
     <div class="adv-item"><label>Hizalama</label><select onchange="updateTierField(${i},'headerAlign',this.value)"><option value="flex-start" ${(t.headerAlign || 'flex-start') === 'flex-start' ? 'selected' : ''}>Sol</option><option value="center" ${t.headerAlign === 'center' ? 'selected' : ''}>Orta</option><option value="flex-end" ${t.headerAlign === 'flex-end' ? 'selected' : ''}>Sağ</option></select></div>
     <div class="adv-item"><label>Header Şekli</label><select onchange="updateTierField(${i},'headerShape',this.value)"><option value="0px" ${(t.headerShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.headerShape === '4px' ? 'selected' : ''}>Hafif Yuvarlak</option><option value="8px" ${t.headerShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="12px" ${t.headerShape === '12px' ? 'selected' : ''}>Çok Yuvarlak</option><option value="50%" ${t.headerShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
     <div class="adv-item"><label>Yazı Boyutu — ${t.nameFontSize || 0.72}rem</label><input type="range" min="0.5" max="1.5" step="0.05" value="${t.nameFontSize || 0.72}" oninput="updateTierField(${i},'nameFontSize',parseFloat(this.value));this.previousElementSibling.textContent='Yazı Boyutu — '+parseFloat(this.value).toFixed(2)+'rem'"></div>
@@ -930,13 +948,56 @@ function buildHeaderTab(t, i) {
  */
 function buildBodyTab(t, i) {
   return `
-    <div class="adv-item adv-full-col"><label>Gövde Banner URL</label><div class="adv-url-row"><input type="text" value="${escHtml(t.bodyBannerImg || '')}" placeholder="https://..." oninput="updateTierField(${i},'bodyBannerImg',this.value)">${t.bodyBannerImg ? `<img class="adv-banner-prev" src="${t.bodyBannerImg}" onerror="this.style.display='none'">` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}</div></div>
-    <div class="adv-item"><label>Gövde Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.bodyBg || '#131320'}" oninput="updateTierField(${i},'bodyBg',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'bodyBg','')">Temizle</button></div></div>
-    <div class="adv-item"><label>Banner Sığdırma</label><select onchange="updateTierField(${i},'bodyBannerFit',this.value)"><option value="cover" ${(t.bodyBannerFit || 'cover') === 'cover' ? 'selected' : ''}>Cover</option><option value="contain" ${t.bodyBannerFit === 'contain' ? 'selected' : ''}>Contain</option><option value="repeat" ${t.bodyBannerFit === 'repeat' ? 'selected' : ''}>Tekrarla</option></select></div>
-    <div class="adv-item"><label>Banner Opaklığı — ${t.bodyBannerOpacity || 40}%</label><input type="range" min="5" max="100" value="${t.bodyBannerOpacity || 40}" oninput="updateTierField(${i},'bodyBannerOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Banner Opaklığı — '+this.value+'%'"></div>
-    <div class="adv-item"><label>Parlaklık — ${t.bodyBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="${t.bodyBannerBrightness || 100}" oninput="updateTierField(${i},'bodyBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
-    <div class="adv-item"><label>Blur — ${t.bodyBannerBlur || 0}px</label><input type="range" min="0" max="20" value="${t.bodyBannerBlur || 0}" oninput="updateTierField(${i},'bodyBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
-    <div class="adv-item"><label>Min Yükseklik — ${t.bodyMinHeight || 48}px</label><input type="range" min="20" max="300" value="${t.bodyMinHeight || 48}" oninput="updateTierField(${i},'bodyMinHeight',parseFloat(this.value));this.previousElementSibling.textContent='Min Yükseklik — '+this.value+'px'"></div>
+    <div class="adv-item adv-full-col"><label>Gövde Banner URL</label><div class="adv-url-row">
+      \${t.linkedBanner && !t.compactMode
+        ? \`<input type="text" value="\${escHtml(t.headerBannerImg || '')}" placeholder="(Bütünleşik mod aktif — Header URL kullanılıyor)" disabled style="opacity:0.5;cursor:not-allowed;">\`
+        : \`<input type="text" value="\${escHtml(t.bodyBannerImg || '')}" placeholder="https://..." oninput="updateTierField(\${i},'bodyBannerImg',this.value)">\`}
+      \${(t.linkedBanner && !t.compactMode)
+        ? (t.headerBannerImg ? \`<img class="adv-banner-prev adv-banner-prev--body" src="\${t.headerBannerImg}" style="object-position:\${t.bodyBannerPosX !== undefined ? t.bodyBannerPosX : 50}% auto" onerror="this.style.display='none'">\` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>')
+        : (t.bodyBannerImg ? \`<img class="adv-banner-prev adv-banner-prev--body" src="\${t.bodyBannerImg}" style="object-position:\${t.bodyBannerPosX !== undefined ? t.bodyBannerPosX : 50}% \${t.bodyBannerPosY !== undefined ? t.bodyBannerPosY : 0}%" onerror="this.style.display='none'">\` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>')}
+    </div></div>
+    <!-- BÜTÜNLEŞİK MOD TOGGLE -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" \${t.linkedBanner ? 'checked' : ''} onchange="updateTierField(\${i},'linkedBanner',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;🔗 Bütünleşik Banner Modu
+      </label>
+      <div style="font-size:0.48rem;color:var(--muted);margin-top:0.2rem;opacity:0.75;line-height:1.5;">
+        Header ve body aynı görseli paylaşır; dikey pozisyon otomatik hesaplanır.<br>
+        Body banner URL\'si, renk yansıması ve iç köşe yuvarlaklığı devre dışı kalır.
+      </div>
+      \${t.compactMode ? \`<div style="font-size:0.5rem;color:#ffaa00;background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);border-radius:3px;padding:0.3rem 0.5rem;margin-top:0.3rem;">⚠ Compact mod aktifken bütünleşik banner kullanılamaz</div>\` : ''}
+    </div>
+    <div class="adv-item"><label>Gövde Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="\${t.bodyBg || '#131320'}" oninput="updateTierField(\${i},'bodyBg',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(\${i},'bodyBg','')">Temizle</button></div></div>
+    <div class="adv-item"><label>Banner Sığdırma</label><select onchange="updateTierField(\${i},'bodyBannerFit',this.value)"><option value="cover" \${(t.bodyBannerFit || 'cover') === 'cover' ? 'selected' : ''}>Cover</option><option value="contain" \${t.bodyBannerFit === 'contain' ? 'selected' : ''}>Contain</option><option value="repeat" \${t.bodyBannerFit === 'repeat' ? 'selected' : ''}>Tekrarla</option></select></div>
+    <div class="adv-item"><label>Banner Opaklığı — \${t.bodyBannerOpacity || 40}%</label><input type="range" min="5" max="100" value="\${t.bodyBannerOpacity || 40}" oninput="updateTierField(\${i},'bodyBannerOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Banner Opaklığı — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Parlaklık — \${t.bodyBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="\${t.bodyBannerBrightness || 100}" oninput="updateTierField(\${i},'bodyBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Blur — \${t.bodyBannerBlur || 0}px</label><input type="range" min="0" max="20" value="\${t.bodyBannerBlur || 0}" oninput="updateTierField(\${i},'bodyBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Min Yükseklik — \${t.bodyMinHeight || 48}px</label><input type="range" min="20" max="300" value="\${t.bodyMinHeight || 48}" oninput="updateTierField(\${i},'bodyMinHeight',parseFloat(this.value));this.previousElementSibling.textContent='Min Yükseklik — '+this.value+'px'"></div>
+    <!-- BANNER POZİSYON — Body -->
+    \${!(t.linkedBanner && !t.compactMode) ? \`
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="font-size:0.5rem;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.3rem;display:block;">📌 Banner Pozisyon (Gövde)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;">
+        <div class="adv-item">
+          <label>Yatay (X) — \${t.bodyBannerPosX !== undefined ? t.bodyBannerPosX : 50}%</label>
+          <input type="range" min="0" max="100" value="\${t.bodyBannerPosX !== undefined ? t.bodyBannerPosX : 50}"
+            oninput="updateBannerPos(\${i},'body','X',this.value);this.previousElementSibling.textContent='Yatay (X) — '+this.value+'%'">
+        </div>
+        <div class="adv-item">
+          <label>Dikey (Y) — \${t.bodyBannerPosY !== undefined ? t.bodyBannerPosY : 0}%</label>
+          <input type="range" min="0" max="100" value="\${t.bodyBannerPosY !== undefined ? t.bodyBannerPosY : 0}"
+            oninput="updateBannerPos(\${i},'body','Y',this.value);this.previousElementSibling.textContent='Dikey (Y) — '+this.value+'%'">
+        </div>
+      </div>
+    </div>\` : \`
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="font-size:0.5rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.2rem;display:block;">📌 Body Dikey Pozisyon (Otomatik)</label>
+      <div style="font-size:0.48rem;color:var(--muted);opacity:0.7;">
+        Bütünleşik modda body pozisyonu otomatik hesaplanır:<br>
+        Y = headerYükseklik / (headerYükseklik + bodyMinYükseklik) × 100
+      </div>
+    </div>\`}
     <div class="adv-item"><label>Etiket Boşluğu — ${t.tagGap || 5}px</label><input type="range" min="0" max="24" value="${t.tagGap || 5}" oninput="updateTierField(${i},'tagGap',parseFloat(this.value));this.previousElementSibling.textContent='Etiket Boşluğu — '+this.value+'px'"></div>
     <div class="adv-item"><label>Çizgi Şeffaflığı — ${t.borderOpacity !== undefined ? t.borderOpacity : 100}%</label><input type="range" min="0" max="100" value="${t.borderOpacity !== undefined ? t.borderOpacity : 100}" oninput="updateTierField(${i},'borderOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Çizgi Şeffaflığı — '+this.value+'%'"></div>
     <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.6rem;margin-top:0.2rem;">
@@ -1097,7 +1158,10 @@ function renderCustomTierBuilder() {
       .adv-item .adv-clear{font-size:0.48rem;color:#ff6060;cursor:pointer;border:none;background:none;padding:0;font-family:inherit;text-decoration:underline;}
       .adv-url-row{display:flex;gap:0.3rem;align-items:center;}
       .adv-url-row input{flex:1;}
-      .adv-banner-prev{width:48px;height:32px;object-fit:cover;border-radius:2px;border:1px solid var(--border);display:block;flex-shrink:0;}
+      .adv-banner-prev{width:80px;height:120px;object-fit:cover;border-radius:2px;border:1px solid var(--border);display:block;flex-shrink:0;}
+      .adv-banner-linked-wrap{display:flex;gap:0;flex-shrink:0;border:1px solid var(--border);border-radius:2px;overflow:hidden;}
+      .adv-banner-linked-wrap .adv-banner-prev--header{width:80px;height:60px;border:none;border-bottom:1px solid var(--accent);border-radius:0;object-fit:cover;}
+      .adv-banner-linked-wrap .adv-banner-prev--body{width:80px;height:60px;border:none;border-radius:0;object-fit:cover;}
       .adv-full-col{grid-column:1/-1;}
     `;
     document.head.appendChild(style);
@@ -1216,7 +1280,8 @@ function updateTierField(i, key, val) {
     'bodyBannerBlur','bodyBannerBrightness','bodyBannerOpacity','headerBannerSaturation',
     'bodyMinHeight','tagGap','borderOpacity','headerMinWidth',
     'headerGradientAngle','headerGlowIntensity','bodyPaddingLeft','bodyPaddingRight','gridCols',
-    'canvasW','canvasH'];
+    'canvasW','canvasH',
+    'headerBannerPosX','headerBannerPosY','bodyBannerPosX','bodyBannerPosY'];
   if (numericKeys.includes(key)) val = parseFloat(val);
   l.customTiers[i][key] = val; saveData(); renderCustomTierBuilder(); renderTierPage();
 }
@@ -1230,6 +1295,33 @@ function updateBodyShapeCorner(tierIdx, cornerIdx, value) {
   corners[cornerIdx] = parseInt(value) + 'px';
   t.bodyShape = corners.join(' ');
   saveData(); renderCustomTierBuilder(); renderTierPage();
+}
+
+/**
+ * Banner pozisyon değerini günceller ve önizlemeyi canlı yansıtır.
+ * @param {number} tierIdx - Tier dizin numarası
+ * @param {'header'|'body'} bölüm - Banner bölümü
+ * @param {'X'|'Y'} eksen - Güncellenen eksen
+ * @param {string|number} deger - Yeni pozisyon değeri (0–100)
+ */
+function updateBannerPos(tierIdx, bölüm, eksen, deger) {
+  const l = getList(AppState.settingsListId); if (!l) return;
+  const t = l.customTiers[tierIdx]; if (!t) return;
+  const numDeger = parseFloat(deger);
+  if (bölüm === 'header') {
+    if (eksen === 'X') t.headerBannerPosX = numDeger;
+    else               t.headerBannerPosY = numDeger;
+    // Önizlemeyi canlı güncelle
+    const prev = document.getElementById('adv-hprev-' + tierIdx);
+    if (prev) prev.style.objectPosition = `${t.headerBannerPosX !== undefined ? t.headerBannerPosX : 50}% ${t.headerBannerPosY !== undefined ? t.headerBannerPosY : 0}%`;
+  } else {
+    if (eksen === 'X') t.bodyBannerPosX = numDeger;
+    else               t.bodyBannerPosY = numDeger;
+    // Önizlemeyi canlı güncelle
+    const prev = document.getElementById('adv-bprev-' + tierIdx);
+    if (prev) prev.style.objectPosition = `${t.bodyBannerPosX !== undefined ? t.bodyBannerPosX : 50}% ${t.bodyBannerPosY !== undefined ? t.bodyBannerPosY : 0}%`;
+  }
+  saveData(); renderTierPage();
 }
 
 /** Gövde şeklini preset değeriyle ayarlar. */
@@ -1281,6 +1373,10 @@ function addCustomTier() {
     freeLayout: false, canvasW: 900, canvasH: 300,
     headerBox: { x: 0, y: 0, w: 900, h: 60 },
     bodyBox:   { x: 0, y: 60, w: 900, h: 240 },
+    // Bütünleşik Banner Hizalama
+    headerBannerPosX: 50, headerBannerPosY: 0,
+    bodyBannerPosX: 50,   bodyBannerPosY: 0,
+    linkedBanner: false,
   });
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }
