@@ -86,6 +86,7 @@ let _settingsListSelected = false;
 
 // ── Save debounce ──
 let _saveTimer = null;
+/** Veriyi localStorage'a yazar; immediate=true ise debounce olmadan anında kaydeder. */
 function saveData(immediate = false) {
   if (immediate) {
     localStorage.setItem('al2-lists', JSON.stringify(lists));
@@ -97,6 +98,51 @@ function saveData(immediate = false) {
   }, 300);
 }
 
+/** Özel katman nesnesine eksik alanları migration ile ekler (yalnızca loadData sırasında çalışır). */
+function migrateTier(t) {
+  if (t.headerBannerImg === undefined)        t.headerBannerImg = t.bannerImg || null;
+  if (t.headerBannerFull === undefined)       t.headerBannerFull = false;
+  if (t.headerBannerFit === undefined)        t.headerBannerFit = t.bannerFit || 'cover';
+  if (t.headerBannerSaturation === undefined) t.headerBannerSaturation = 100;
+  if (t.headerBannerBrightness === undefined) t.headerBannerBrightness = t.bannerBrightness || 100;
+  if (t.headerBannerBlur === undefined)       t.headerBannerBlur = t.bannerBlur || 0;
+  if (t.bodyBannerImg === undefined)          t.bodyBannerImg = null;
+  if (t.bodyBannerFit === undefined)          t.bodyBannerFit = 'cover';
+  if (t.bodyBannerBlur === undefined)         t.bodyBannerBlur = 0;
+  if (t.bodyBannerBrightness === undefined)   t.bodyBannerBrightness = 100;
+  if (t.bodyBannerOpacity === undefined)      t.bodyBannerOpacity = 40;
+  if (t.bodyShape === undefined)              t.bodyShape = '0px 0px 4px 4px';
+  if (t.headerShape === undefined)            t.headerShape = '0px';
+  if (t.tagShape === undefined)               t.tagShape = '2px';
+  if (t.bodyMinHeight === undefined)          t.bodyMinHeight = 48;
+  if (t.tagGap === undefined)                 t.tagGap = 5;
+  if (t.borderOpacity === undefined)          t.borderOpacity = 100;
+  if (t.headerMinWidth === undefined)         t.headerMinWidth = 0;
+  if (t.hidden === undefined)                 t.hidden = false;
+  if (t.headerGradientEnabled === undefined)  t.headerGradientEnabled = false;
+  if (t.headerGradientColor1 === undefined)   t.headerGradientColor1 = '#7c3aed';
+  if (t.headerGradientColor2 === undefined)   t.headerGradientColor2 = '#2563eb';
+  if (t.headerGradientAngle === undefined)    t.headerGradientAngle = 135;
+  if (t.headerCountEnabled === undefined)     t.headerCountEnabled = false;
+  if (t.compactMode === undefined)            t.compactMode = false;
+  if (t.headerGlowEnabled === undefined)      t.headerGlowEnabled = false;
+  if (t.headerGlowIntensity === undefined)    t.headerGlowIntensity = 8;
+  if (t.dividerStyle === undefined)           t.dividerStyle = 'none';
+  if (t.bodyColorReflect === undefined)       t.bodyColorReflect = false;
+  if (t.bodyJustify === undefined)            t.bodyJustify = 'flex-start';
+  if (t.bodyPaddingLeft === undefined)        t.bodyPaddingLeft = 0;
+  if (t.bodyPaddingRight === undefined)       t.bodyPaddingRight = 0;
+  if (t.gridMode === undefined)               t.gridMode = false;
+  if (t.gridCols === undefined)               t.gridCols = 4;
+  // Serbest konumlandırma alanları
+  if (t.freeLayout === undefined)             t.freeLayout = false;
+  if (t.canvasW === undefined)               t.canvasW = 900;
+  if (t.canvasH === undefined)               t.canvasH = 300;
+  if (t.headerBox === undefined)             t.headerBox = { x: 0, y: 0, w: 900, h: 60 };
+  if (t.bodyBox === undefined)               t.bodyBox   = { x: 0, y: 60, w: 900, h: 240 };
+}
+
+/** localStorage'dan listeleri yükler; eksik alanları migration ile tamamlar. */
 function loadData() {
   const raw = localStorage.getItem('al2-lists');
   if (raw) {
@@ -109,12 +155,16 @@ function loadData() {
     if (!l.settings)      l.settings = {};
     if (!l.customTiers)   l.customTiers = [];
     if (!l.starTierOrder) l.starTierOrder = [5,4,3,2,1];
-    if (!l.customFields)  l.customFields = [];  // YENİ: custom field desteği
+    if (!l.customFields)  l.customFields = [];
+    // Her tier'ı migrate et — sadece yükleme sırasında bir kez çalışır
+    l.customTiers.forEach(t => migrateTier(t));
   });
 }
 
+/** Belirtilen id'ye sahip listeyi döndürür; bulunamazsa null döner. */
 function getList(id) { return lists.find(l => l.id === id) || null; }
 
+/** Belirtilen liste için ayarları DEFAULT_SETTINGS ile birleştirilmiş olarak döndürür. */
 function getSettings(listId) {
   const l = getList(listId);
   if (!l) return { ...DEFAULT_SETTINGS };

@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────
 //  SETTINGS SAVE / CANCEL
 // ─────────────────────────────────────────
+/** Kaydedilmemiş değişiklik uyarı çubuğunu gösterir. */
 function markSettingsDirty() {
   const bar = document.getElementById('settings-save-bar');
   if (bar) bar.style.display = 'flex';
@@ -12,6 +13,7 @@ function markSettingsDirty() {
   if (lbl) lbl.textContent = '⚠ Kaydedilmemiş değişiklikler var';
 }
 
+/** Draft ayarları aktif listeye uygular ve kaydeder. */
 function saveSettingsNow() {
   if (!AppState.settingsListId || !_settingsListSelected) return;
   const l = getList(AppState.settingsListId); if (!l) return;
@@ -22,6 +24,7 @@ function saveSettingsNow() {
   AppState._lastAppliedListId = null;
 }
 
+/** Kaydedilmemiş değişiklikleri iptal eder ve UI'ı sıfırlar. */
 function cancelSettingsChanges() {
   _settingsDraft = null;
   const bar = document.getElementById('settings-save-bar'); if (bar) bar.style.display = 'none';
@@ -31,6 +34,7 @@ function cancelSettingsChanges() {
 // ─────────────────────────────────────────
 //  SETTINGS PANEL RENDER
 // ─────────────────────────────────────────
+/** Ayarlar panelini (liste seçimi + dinamik içerik) render eder. */
 function renderSettingsPanel() {
   const btnsContainer = document.getElementById('settings-list-btns');
   if (btnsContainer) {
@@ -76,6 +80,7 @@ function renderSettingsPanel() {
   renderCustomFieldsManager();
 }
 
+/** Liste seçildiğinde; kaydedilmemiş değişiklik varsa onay ister. */
 function onSettingsListSelect(id) {
   if (_settingsDraft && Object.keys(_settingsDraft).length > 0 && AppState.settingsListId !== id) {
     showConfirm('Kaydedilmemiş Değişiklikler', 'Mevcut değişiklikler kaydedilmedi. Çıkmak istiyor musun?', () => {
@@ -90,14 +95,16 @@ function onSettingsListSelect(id) {
   renderSettingsPanel();
 }
 
+/** onSettingsListSelect için alias. */
 function onSettingsListChange(id) { onSettingsListSelect(id); }
 
 // ─────────────────────────────────────────
-//  DYNAMIC SETTINGS CONTENT
+//  DYNAMIC SETTINGS CONTENT — ALT FONKSİYONLAR
 // ─────────────────────────────────────────
-function buildSettingsDynamicContent() {
-  const dyn = document.getElementById('settings-dynamic-content'); if (!dyn) return;
-  dyn.innerHTML = `
+
+/** Görünüm bölümünün (renkler, font, şeffaflık, arka plan) HTML'ini döndürür. */
+function renderAppearanceSection() {
+  return `
     <!-- APPEARANCE -->
     <div class="settings-section">
       <h2>Görünüm</h2>
@@ -199,54 +206,15 @@ function buildSettingsDynamicContent() {
     <!-- RESET -->
     <div class="settings-section">
       <h2>Sıfırla</h2>
-      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.7;">
-        Seçili listenin ayarlarını seçerek ya da tamamen sıfırlayabilirsin.
-      </p>
-
-      <!-- Seçici sıfırlama grupları -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.9rem;">
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('colors')">
-          🎨 Renkleri Sıfırla
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('font')">
-          🔤 Font & Boyutu Sıfırla
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('opacity')">
-          🔆 Şeffaflıkları Sıfırla
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('card')">
-          🃏 Kart & Poster Sıfırla
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('tags')">
-          🏷 Etiket Ayarları Sıfırla
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('bg')">
-          🖼 Arka Planı Temizle
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('anim')">
-          ⚡ Animasyonları Sıfırla
-        </button>
-        <button class="btn-reset-default" style="font-size:0.6rem;padding:0.5rem 0.6rem;background:transparent;border:1px solid var(--border);color:var(--muted);"
-          onclick="confirmResetGroup('layout')">
-          📐 Layout Ayarlarını Sıfırla
-        </button>
-      </div>
-
-      <div style="border-top:1px solid var(--border);padding-top:0.8rem;">
-        <button class="btn-reset-default" onclick="confirmResetDefaults()">↺ &nbsp;Tümünü Varsayılana Döndür</button>
-        <div style="font-size:0.5rem;color:var(--muted);margin-top:0.5rem;opacity:0.7;line-height:1.6;">
-          Animeler, özel katmanlar ve özel alanlar korunur. Sadece görünüm ayarları sıfırlanır.
-        </div>
-      </div>
+      <p style="font-size:0.62rem;color:var(--muted);margin-bottom:0.8rem;line-height:1.7;">Seçili listenin renk, font, şeffaflık ve arka plan ayarlarını sıfırlar. Animeler ve özel katmanlar korunur.</p>
+      <button class="btn-reset-default" onclick="confirmResetDefaults()">↺ &nbsp;Varsayılan Ayarlara Dön</button>
     </div>
+  `;
+}
 
+/** Kart ve görünüm bölümünün HTML'ini döndürür. */
+function renderCardSection() {
+  return `
     <!-- KART & GÖRÜNÜM -->
     <div class="settings-section">
       <h2>Kart &amp; Görünüm</h2>
@@ -315,7 +283,12 @@ function buildSettingsDynamicContent() {
 
       </div>
     </div>
+  `;
+}
 
+/** Liste ve sıralama bölümünün HTML'ini döndürür. */
+function renderListSection() {
+  return `
     <!-- LİSTE & SIRALAMA -->
     <div class="settings-section">
       <h2>Liste &amp; Sıralama</h2>
@@ -363,7 +336,12 @@ function buildSettingsDynamicContent() {
 
       </div>
     </div>
+  `;
+}
 
+/** Animasyon bölümünün HTML'ini döndürür. */
+function renderAnimationSection() {
+  return `
     <!-- ANİMASYON -->
     <div class="settings-section">
       <h2>Animasyon</h2>
@@ -386,6 +364,16 @@ function buildSettingsDynamicContent() {
       </div>
     </div>
   `;
+}
+
+/** Tüm dinamik ayar içeriğini birleştirip DOM'a yazar. */
+function buildSettingsDynamicContent() {
+  const dyn = document.getElementById('settings-dynamic-content'); if (!dyn) return;
+  dyn.innerHTML =
+    renderAppearanceSection() +
+    renderCardSection() +
+    renderListSection() +
+    renderAnimationSection();
 
   const l = getList(AppState.settingsListId);
   const lbl = document.getElementById('custom-tier-list-label');
@@ -393,10 +381,10 @@ function buildSettingsDynamicContent() {
   const cfl = document.getElementById('custom-fields-list-label');
   if (cfl && l) cfl.textContent = '— ' + l.name;
 
-  // Tema preset butonlarını render et
   renderThemePresets();
 }
 
+/** Tema preset butonlarını render eder. */
 function renderThemePresets() {
   const wrap = document.getElementById('theme-presets-wrap'); if (!wrap) return;
   wrap.innerHTML = '';
@@ -409,7 +397,6 @@ function renderThemePresets() {
       letter-spacing:0.06em;padding:0.3rem 0.65rem;border-radius:3px;
       cursor:pointer;transition:border-color 0.2s,color 0.2s;
     `;
-    // Küçük renk önizlemesi
     const swatchRow = document.createElement('span');
     swatchRow.style.cssText = 'display:flex;gap:2px;';
     ['col-bg','col-accent','col-text'].forEach(key => {
@@ -426,6 +413,7 @@ function renderThemePresets() {
   });
 }
 
+/** Seçili tema preset'ini uygular. */
 function applyThemePreset(colors) {
   const cssMap = { 'col-bg': 'bg', 'col-surface': 'surface', 'col-card': 'card', 'col-border': 'border', 'col-text': 'text', 'col-accent': 'accent' };
   Object.entries(colors).forEach(([key, val]) => {
@@ -441,6 +429,7 @@ function applyThemePreset(colors) {
 // ─────────────────────────────────────────
 //  LIST MANAGEMENT PANEL
 // ─────────────────────────────────────────
+/** Liste yönetim panelini (yeniden adlandır, sil) render eder. */
 function renderListMgmtPanel() {
   const c = document.getElementById('list-mgmt-panel'); if (!c) return;
   c.innerHTML = '';
@@ -458,6 +447,7 @@ function renderListMgmtPanel() {
 // ─────────────────────────────────────────
 //  SETTINGS LOAD / APPLY
 // ─────────────────────────────────────────
+/** Ayarlar UI'ını verilen liste ID'sine göre doldurur. */
 function loadSettingsUI(listId) {
   const s = Object.assign({}, getSettings(listId), _settingsDraft || {});
   const colorMap = { 'col-bg': 'bg', 'col-surface': 'surface', 'col-card': 'card', 'col-border': 'border', 'col-text': 'text', 'col-accent': 'accent' };
@@ -517,6 +507,7 @@ function loadSettingsUI(listId) {
   applyAllSettingsToDOM(s);
 }
 
+/** Tüm ayarları CSS değişkenleri ve DOM üzerinden anında uygular. */
 function applyAllSettingsToDOM(s) {
   const r = document.documentElement.style;
   r.setProperty('--bg',      s['col-bg']      || DEFAULT_SETTINGS['col-bg']);
@@ -560,19 +551,25 @@ function applyAllSettingsToDOM(s) {
   r.setProperty('--transition-speed',   s.transitionSpeed || '120ms');
 }
 
+/**
+ * Ayarı draft'a kaydeder; aynı zamanda _lastAppliedListId'yi sıfırlar
+ * böylece bir sonraki render'da ayarlar yeniden uygulanır.
+ */
 function saveSetting(key, value) {
   if (!_settingsDraft) _settingsDraft = {};
   _settingsDraft[key] = value;
+  AppState._lastAppliedListId = null;
   markSettingsDirty();
 }
 
+/** Renk ayarını CSS değişkenine ve draft'a yazar. */
 function applyColorSetting(key, value) {
   const cssMap = { bg: '--bg', surface: '--surface', card: '--card', border: '--border', text: '--text', accent: '--accent' };
   document.documentElement.style.setProperty(cssMap[key] || ('--' + key), value);
   saveSetting('col-' + key, value);
-  AppState._lastAppliedListId = null;
 }
 
+/** Şeffaflık/doygunluk/parlaklık ayarını CSS değişkenine ve draft'a yazar. */
 function applyOpacitySetting(key, value) {
   const v = parseInt(value);
   const cssMap = { nav: '--nav-opacity', modal: '--modal-opacity', card: '--card-opacity', surface: '--surface-opacity', border: '--border-opacity', tag: '--tag-opacity' };
@@ -583,10 +580,10 @@ function applyOpacitySetting(key, value) {
   const dispEl = document.getElementById(dispMap[key]); if (dispEl) dispEl.textContent = '%' + v;
   const sKey = (key === 'sat') ? 'ui-sat' : (key === 'bri') ? 'ui-bri' : 'op-' + key;
   saveSetting(sKey, v);
-  AppState._lastAppliedListId = null;
 }
 
 // ─── Kart & Görünüm ───
+/** Kart görünüm slider ayarını uygular. */
 function applyCardSetting(key, value, inputEl, unit) {
   const v = parseInt(value);
   const cssMap = {
@@ -605,21 +602,20 @@ function applyCardSetting(key, value, inputEl, unit) {
   if (cssMap[key]) document.documentElement.style.setProperty(cssMap[key], v + unit);
   const vd = document.getElementById(vdMap[key]); if (vd) vd.textContent = v + unit;
   saveSetting(key, v);
-  AppState._lastAppliedListId = null;
 }
 
+/** Kart görünüm select ayarını (pos, fit) uygular. */
 function applyCardSelectSetting(key, value) {
   const cssMap = { cardImgPos: '--card-img-pos', cardImgFit: '--card-img-fit' };
   if (cssMap[key]) document.documentElement.style.setProperty(cssMap[key], value);
   saveSetting(key, value);
-  AppState._lastAppliedListId = null;
 }
 
 // ─── Liste & Sıralama ───
+/** Varsayılan sıralama modunu uygular; aktif liste de aynıysa anında render eder. */
 function applyDefaultSort(value) {
   const l = getList(AppState.settingsListId); if (!l) return;
   saveSetting('sortMode', value);
-  // Aktif liste de aynıysa anında uygula
   if (AppState.activeListId === AppState.settingsListId) {
     const al = getList(AppState.activeListId);
     if (al) { al.settings.sortMode = value; saveData(); }
@@ -627,12 +623,13 @@ function applyDefaultSort(value) {
   }
 }
 
+/** Etiket şeklini (global) uygular. */
 function applyTagShapeGlobal(value) {
   document.documentElement.style.setProperty('--tag-shape-global', value);
   saveSetting('tagShapeGlobal', value);
-  AppState._lastAppliedListId = null;
 }
 
+/** Etiket iç boşluğunu (yatay veya dikey) uygular. */
 function applyTagPad(axis, value, inputEl) {
   const v = parseInt(value);
   if (axis === 'x') {
@@ -644,30 +641,29 @@ function applyTagPad(axis, value, inputEl) {
     const vd = document.getElementById('vd-tagpady'); if (vd) vd.textContent = v + 'px';
     saveSetting('tagPadY', v);
   }
-  AppState._lastAppliedListId = null;
 }
 
 // ─── Animasyon ───
+/** Geçiş hız ayarını uygular ve seçili butonu vurgular. */
 function applyTransitionSpeed(value, btn) {
   document.documentElement.style.setProperty('--transition-speed', value);
   const vd = document.getElementById('vd-transitionspeed'); if (vd) vd.textContent = value;
-  // Seçili butonu vurgula
   document.querySelectorAll('.anim-preset-btn').forEach(b => {
     b.style.borderColor = b === btn ? 'var(--accent)' : 'var(--border)';
     b.style.color       = b === btn ? 'var(--accent)' : 'var(--text)';
   });
   saveSetting('transitionSpeed', value);
-  AppState._lastAppliedListId = null;
 }
 
+/** Tier'lar arası boşluk ayarını uygular. */
 function applyTierGapSetting(value) {
   const v = parseInt(value);
   const dispEl = document.getElementById('vd-tiergap'); if (dispEl) dispEl.textContent = v + 'px';
   const tc = document.getElementById('tiers-container'); if (tc) tc.style.gap = v + 'px';
   saveSetting('tierGap', v);
-  AppState._lastAppliedListId = null;
 }
 
+/** Seçili fontu yükler ve uygular. */
 function applyFontSetting() {
   const fontSel = document.getElementById('font-select'); if (!fontSel) return;
   const font = fontSel.value;
@@ -677,27 +673,28 @@ function applyFontSetting() {
   saveSetting('font', font);
 }
 
+/** Font listesini arama sorgusuna göre filtreler. */
 function filterFontList(query) {
   const sel = document.getElementById('font-select'); if (!sel) return;
   const q = query.trim().toLowerCase();
   Array.from(sel.options).forEach(opt => {
     opt.style.display = (!q || opt.value.toLowerCase().includes(q)) ? '' : 'none';
   });
-  // Eğer mevcut seçili gizlendiyse ilk görünür opsiyona geç
   if (sel.options[sel.selectedIndex] && sel.options[sel.selectedIndex].style.display === 'none') {
     const first = Array.from(sel.options).find(o => o.style.display !== 'none');
     if (first) { sel.value = first.value; applyFontSetting(); }
   }
 }
 
+/** Font boyutu ayarını uygular. */
 function applyFontSizeSetting(value) {
   const v = parseInt(value);
   const vd = document.getElementById('vd-fontsize'); if (vd) vd.textContent = v + 'px';
   document.documentElement.style.setProperty('--base-font-size', v + 'px');
   saveSetting('fontSize', v);
-  AppState._lastAppliedListId = null;
 }
 
+/** Google Font stylesheet'ini dinamik olarak yükler. */
 function loadGoogleFont(name) {
   if (!name) return;
   const url = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(name)}:wght@400;600;700&display=swap`;
@@ -706,6 +703,7 @@ function loadGoogleFont(name) {
   el.href = url;
 }
 
+/** Arka plan görsel URL'sini uygular. */
 function applyBgUrlSetting() {
   const url = document.getElementById('bg-img-url').value.trim();
   saveSetting('bgImg', url || null);
@@ -713,6 +711,7 @@ function applyBgUrlSetting() {
   updateBgDropPreview(url);
 }
 
+/** Arka plan görselini temizler. */
 function clearBg() {
   document.getElementById('bg-img-url').value = '';
   saveSetting('bgImg', null);
@@ -720,6 +719,7 @@ function clearBg() {
   updateBgDropPreview(null);
 }
 
+/** Arka plan opaklığını uygular. */
 function applyBgOpacity() {
   const v = document.getElementById('bg-opacity').value;
   document.getElementById('vd-bgop').textContent = '%' + v;
@@ -727,12 +727,14 @@ function applyBgOpacity() {
   saveSetting('bgOpacity', parseInt(v));
 }
 
+/** Arka plan önizleme alanını günceller. */
 function updateBgDropPreview(imgData) {
   const prev = document.getElementById('bg-preview-img'), lbl = document.getElementById('bg-drop-label');
   if (imgData) { prev.src = imgData; prev.style.display = 'block'; lbl.style.display = 'none'; }
   else { prev.style.display = 'none'; lbl.style.display = 'block'; lbl.textContent = '🖼 URL girildiğinde önizleme görünecek'; }
 }
 
+/** Varsayılan ayarlara sıfırlama için onay diyaloğunu gösterir. */
 function confirmResetDefaults() {
   showConfirm('Varsayılana Dön', 'Seçili listenin renk, font ve şeffaflık ayarları sıfırlanacak. Animeler ve özel katmanlar korunacak.', () => {
     const l = getList(AppState.settingsListId); if (!l) return;
@@ -746,45 +748,10 @@ function confirmResetDefaults() {
   });
 }
 
-function confirmResetGroup(group) {
-  const groupNames = {
-    colors:  'Renkler (arka plan, kart, vurgu…)',
-    font:    'Font & yazı boyutu',
-    opacity: 'Tüm şeffaflık değerleri',
-    card:    'Kart & poster boyutu, gölge, hover efekti',
-    tags:    'Etiket şekli, dolgu ve genel tag ayarları',
-    bg:      'Arka plan görseli',
-    anim:    'Animasyon geçiş hızı',
-    layout:  'Katman boşluğu ve sıralama modu',
-  };
-  showConfirm('Sıfırla: ' + (groupNames[group] || group),
-    '"' + (groupNames[group] || group) + '" ayarları varsayılana dönecek. Devam et?',
-    () => {
-      const l = getList(AppState.settingsListId); if (!l) return;
-      if (!l.settings) l.settings = {};
-      const D = DEFAULT_SETTINGS;
-      const keySets = {
-        colors:  ['col-bg','col-surface','col-card','col-border','col-text','col-accent'],
-        font:    ['font','fontSize'],
-        opacity: ['op-nav','op-modal','op-card','op-surface','op-border','op-tag','ui-sat','ui-bri','bgOpacity'],
-        card:    ['cardRadius','cardWidth','cardHeight','cardShadow','cardHoverBright','cardHoverLift','cardImgPos','cardImgFit'],
-        tags:    ['tagShapeGlobal','tagPadX','tagPadY'],
-        bg:      ['bgImg','bgOpacity'],
-        anim:    ['transitionSpeed'],
-        layout:  ['tierGap','sortMode'],
-      };
-      const keys = keySets[group] || [];
-      keys.forEach(k => { l.settings[k] = D[k]; });
-      if (group === 'bg') l.settings.bgImg = null;
-      _settingsDraft = null; saveData(true); loadSettingsUI(AppState.settingsListId);
-      const bar = document.getElementById('settings-save-bar'); if (bar) bar.style.display = 'none';
-    }
-  );
-}
-
 // ─────────────────────────────────────────
 //  CUSTOM FIELD MANAGER
 // ─────────────────────────────────────────
+/** Özel alan yöneticisini render eder. */
 function renderCustomFieldsManager() {
   const l = getList(AppState.settingsListId);
   const c = document.getElementById('custom-fields-builder'); if (!c || !l) return;
@@ -824,7 +791,6 @@ function renderCustomFieldsManager() {
     `;
     item.appendChild(row1);
 
-    // Placeholder (metin/sayı için)
     if (field.type === 'text' || field.type === 'number') {
       const row2 = document.createElement('div');
       row2.style.cssText = 'display:flex;align-items:center;gap:0.6rem;';
@@ -837,7 +803,6 @@ function renderCustomFieldsManager() {
       item.appendChild(row2);
     }
 
-    // Seçenekler (select tipi için)
     if (field.type === 'select') {
       const row3 = document.createElement('div');
       row3.style.cssText = 'display:flex;align-items:flex-start;gap:0.6rem;';
@@ -859,6 +824,7 @@ function renderCustomFieldsManager() {
   });
 }
 
+/** Yeni özel alan ekler. */
 function addCustomField() {
   const l = getList(AppState.settingsListId); if (!l) return;
   if (!l.customFields) l.customFields = [];
@@ -867,17 +833,20 @@ function addCustomField() {
   saveData(); renderCustomFieldsManager();
 }
 
+/** Özel alan özelliğini günceller. */
 function updateCustomField(i, key, val) {
   const l = getList(AppState.settingsListId); if (!l || !l.customFields) return;
   l.customFields[i][key] = val; saveData(); renderCustomFieldsManager();
 }
 
+/** Seçenek tipi alan için seçenekleri günceller. */
 function updateCustomFieldOptions(i, rawText) {
   const l = getList(AppState.settingsListId); if (!l || !l.customFields) return;
   l.customFields[i].options = rawText.split('\n').map(s => s.trim()).filter(Boolean);
   saveData();
 }
 
+/** Özel alanı siler. */
 function deleteCustomField(i) {
   showConfirm('Alanı Sil', 'Bu özel alan ve tüm animelerdeki değerleri silinecek.', () => {
     const l = getList(AppState.settingsListId); if (!l || !l.customFields) return;
@@ -889,8 +858,222 @@ function deleteCustomField(i) {
 }
 
 // ─────────────────────────────────────────
+//  CUSTOM TIER BUILDER — TAB YARDIMCILARI
+// ─────────────────────────────────────────
+
+/**
+ * Tier gelişmiş ayarları için Header tab HTML'ini döndürür.
+ * @param {object} t - Tier nesnesi
+ * @param {number} i - Tier dizin numarası
+ * @returns {string}
+ */
+function buildHeaderTab(t, i) {
+  return `
+    <div class="adv-item adv-full-col"><label>Header Banner URL</label>
+      <div class="adv-url-row">
+        <input type="text" value="${escHtml(t.headerBannerImg || '')}" placeholder="https://..." oninput="updateTierField(${i},'headerBannerImg',this.value)">
+        ${t.headerBannerImg ? `<img class="adv-banner-prev" src="${t.headerBannerImg}" onerror="this.style.display='none'">` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}
+      </div>
+    </div>
+    <div class="adv-item adv-full-col"><label><input type="checkbox" ${t.headerBannerFull ? 'checked' : ''} onchange="updateTierField(${i},'headerBannerFull',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;"> &nbsp;Banner tüm header'ı kaplasın</label></div>
+    <div class="adv-item"><label>Header Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.headerBg || '#0e0e1a'}" oninput="updateTierField(${i},'headerBg',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'headerBg','')">Temizle</button></div></div>
+    <div class="adv-item"><label>Banner Sığdırma</label><select onchange="updateTierField(${i},'headerBannerFit',this.value)"><option value="cover" ${t.headerBannerFit === 'cover' ? 'selected' : ''}>Cover</option><option value="contain" ${t.headerBannerFit === 'contain' ? 'selected' : ''}>Contain</option><option value="fill" ${t.headerBannerFit === 'fill' ? 'selected' : ''}>Fill</option></select></div>
+    <div class="adv-item"><label>Yükseklik — ${t.headerHeight || 45}px</label><input type="range" min="30" max="200" value="${t.headerHeight || 45}" oninput="updateTierField(${i},'headerHeight',parseFloat(this.value));this.previousElementSibling.textContent='Yükseklik — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Genişlik — ${t.headerMinWidth || 0}%</label><input type="range" min="0" max="100" value="${t.headerMinWidth || 0}" oninput="updateTierField(${i},'headerMinWidth',parseFloat(this.value));this.previousElementSibling.textContent='Genişlik — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Doygunluk — ${t.headerBannerSaturation || 100}%</label><input type="range" min="0" max="200" value="${t.headerBannerSaturation || 100}" oninput="updateTierField(${i},'headerBannerSaturation',parseFloat(this.value));this.previousElementSibling.textContent='Doygunluk — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Parlaklık — ${t.headerBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="${t.headerBannerBrightness || 100}" oninput="updateTierField(${i},'headerBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Blur — ${t.headerBannerBlur || 0}px</label><input type="range" min="0" max="20" value="${t.headerBannerBlur || 0}" oninput="updateTierField(${i},'headerBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Hizalama</label><select onchange="updateTierField(${i},'headerAlign',this.value)"><option value="flex-start" ${(t.headerAlign || 'flex-start') === 'flex-start' ? 'selected' : ''}>Sol</option><option value="center" ${t.headerAlign === 'center' ? 'selected' : ''}>Orta</option><option value="flex-end" ${t.headerAlign === 'flex-end' ? 'selected' : ''}>Sağ</option></select></div>
+    <div class="adv-item"><label>Header Şekli</label><select onchange="updateTierField(${i},'headerShape',this.value)"><option value="0px" ${(t.headerShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.headerShape === '4px' ? 'selected' : ''}>Hafif Yuvarlak</option><option value="8px" ${t.headerShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="12px" ${t.headerShape === '12px' ? 'selected' : ''}>Çok Yuvarlak</option><option value="50%" ${t.headerShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
+    <div class="adv-item"><label>Yazı Boyutu — ${t.nameFontSize || 0.72}rem</label><input type="range" min="0.5" max="1.5" step="0.05" value="${t.nameFontSize || 0.72}" oninput="updateTierField(${i},'nameFontSize',parseFloat(this.value));this.previousElementSibling.textContent='Yazı Boyutu — '+parseFloat(this.value).toFixed(2)+'rem'"></div>
+    <!-- GRADIENT -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.headerGradientEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerGradientEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;🎨 Gradient Header
+      </label>
+    </div>
+    ${t.headerGradientEnabled ? `
+    <div class="adv-item"><label>Renk 1</label><input type="color" value="${t.headerGradientColor1 || '#7c3aed'}" oninput="updateTierField(${i},'headerGradientColor1',this.value)"></div>
+    <div class="adv-item"><label>Renk 2</label><input type="color" value="${t.headerGradientColor2 || '#2563eb'}" oninput="updateTierField(${i},'headerGradientColor2',this.value)"></div>
+    <div class="adv-item adv-full-col"><label>Açı — ${t.headerGradientAngle || 135}°</label><input type="range" min="0" max="360" value="${t.headerGradientAngle || 135}" oninput="updateTierField(${i},'headerGradientAngle',parseFloat(this.value));this.previousElementSibling.textContent='Açı — '+this.value+'°'"></div>
+    <div class="adv-item adv-full-col" style="font-size:0.48rem;color:var(--muted);display:flex;gap:0.4rem;flex-wrap:wrap;">
+      <button onclick="updateTierField(${i},'headerGradientColor1','#7c3aed');updateTierField(${i},'headerGradientColor2','#2563eb')" style="background:linear-gradient(135deg,#7c3aed,#2563eb);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Mor→Mavi</button>
+      <button onclick="updateTierField(${i},'headerGradientColor1','#f97316');updateTierField(${i},'headerGradientColor2','#dc2626')" style="background:linear-gradient(135deg,#f97316,#dc2626);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Turuncu→Kırmızı</button>
+      <button onclick="updateTierField(${i},'headerGradientColor1','#06b6d4');updateTierField(${i},'headerGradientColor2','#6366f1')" style="background:linear-gradient(135deg,#06b6d4,#6366f1);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Cyan→İndigo</button>
+      <button onclick="updateTierField(${i},'headerGradientColor1','#10b981');updateTierField(${i},'headerGradientColor2','#fbbf24')" style="background:linear-gradient(135deg,#10b981,#fbbf24);border:none;color:#000;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Yeşil→Sarı</button>
+    </div>` : ''}
+    <!-- SAYAÇ -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.headerCountEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerCountEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;🔢 Header'da Anime Sayısı
+      </label>
+    </div>
+    <!-- GLOW -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.headerGlowEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerGlowEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;✨ İsim Glow Efekti
+      </label>
+    </div>
+    ${t.headerGlowEnabled ? `
+    <div class="adv-item adv-full-col"><label>Glow Yoğunluğu — ${t.headerGlowIntensity || 8}px</label><input type="range" min="1" max="30" value="${t.headerGlowIntensity || 8}" oninput="updateTierField(${i},'headerGlowIntensity',parseFloat(this.value));this.previousElementSibling.textContent='Glow Yoğunluğu — '+this.value+'px'"></div>` : ''}
+  `;
+}
+
+/**
+ * Tier gelişmiş ayarları için Body tab HTML'ini döndürür.
+ * @param {object} t - Tier nesnesi
+ * @param {number} i - Tier dizin numarası
+ * @returns {string}
+ */
+function buildBodyTab(t, i) {
+  return `
+    <div class="adv-item adv-full-col"><label>Gövde Banner URL</label><div class="adv-url-row"><input type="text" value="${escHtml(t.bodyBannerImg || '')}" placeholder="https://..." oninput="updateTierField(${i},'bodyBannerImg',this.value)">${t.bodyBannerImg ? `<img class="adv-banner-prev" src="${t.bodyBannerImg}" onerror="this.style.display='none'">` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}</div></div>
+    <div class="adv-item"><label>Gövde Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.bodyBg || '#131320'}" oninput="updateTierField(${i},'bodyBg',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'bodyBg','')">Temizle</button></div></div>
+    <div class="adv-item"><label>Banner Sığdırma</label><select onchange="updateTierField(${i},'bodyBannerFit',this.value)"><option value="cover" ${(t.bodyBannerFit || 'cover') === 'cover' ? 'selected' : ''}>Cover</option><option value="contain" ${t.bodyBannerFit === 'contain' ? 'selected' : ''}>Contain</option><option value="repeat" ${t.bodyBannerFit === 'repeat' ? 'selected' : ''}>Tekrarla</option></select></div>
+    <div class="adv-item"><label>Banner Opaklığı — ${t.bodyBannerOpacity || 40}%</label><input type="range" min="5" max="100" value="${t.bodyBannerOpacity || 40}" oninput="updateTierField(${i},'bodyBannerOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Banner Opaklığı — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Parlaklık — ${t.bodyBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="${t.bodyBannerBrightness || 100}" oninput="updateTierField(${i},'bodyBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
+    <div class="adv-item"><label>Blur — ${t.bodyBannerBlur || 0}px</label><input type="range" min="0" max="20" value="${t.bodyBannerBlur || 0}" oninput="updateTierField(${i},'bodyBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Min Yükseklik — ${t.bodyMinHeight || 48}px</label><input type="range" min="20" max="300" value="${t.bodyMinHeight || 48}" oninput="updateTierField(${i},'bodyMinHeight',parseFloat(this.value));this.previousElementSibling.textContent='Min Yükseklik — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Etiket Boşluğu — ${t.tagGap || 5}px</label><input type="range" min="0" max="24" value="${t.tagGap || 5}" oninput="updateTierField(${i},'tagGap',parseFloat(this.value));this.previousElementSibling.textContent='Etiket Boşluğu — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Çizgi Şeffaflığı — ${t.borderOpacity !== undefined ? t.borderOpacity : 100}%</label><input type="range" min="0" max="100" value="${t.borderOpacity !== undefined ? t.borderOpacity : 100}" oninput="updateTierField(${i},'borderOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Çizgi Şeffaflığı — '+this.value+'%'"></div>
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.6rem;margin-top:0.2rem;">
+      <label style="margin-bottom:0.4rem;display:block;">Gövde Şekli (border-radius)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem 0.5rem;margin-bottom:0.4rem;">
+        ${['Sol Üst','Sağ Üst','Sağ Alt','Sol Alt'].map((lbl, ci) => {
+          const corners = (t.bodyShape || '0px 0px 0px 0px').split(/\s+/);
+          while (corners.length < 4) corners.push('0px');
+          const raw = parseInt(corners[ci]) || 0;
+          return `<div style="display:flex;flex-direction:column;gap:0.15rem;">
+            <span style="font-size:0.45rem;color:var(--muted);text-transform:uppercase;">${lbl}</span>
+            <div style="display:flex;align-items:center;gap:0.25rem;">
+              <input type="range" min="0" max="50" value="${raw}" style="flex:1;"
+                oninput="updateBodyShapeCorner(${i},${ci},this.value);this.nextElementSibling.textContent=this.value+'px'">
+              <span style="font-size:0.5rem;color:var(--muted);min-width:26px;">${raw}px</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.2rem;">
+        <button onclick="setBodyShapePreset(${i},'0px 0px 0px 0px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Keskin</button>
+        <button onclick="setBodyShapePreset(${i},'4px 4px 4px 4px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Hafif</button>
+        <button onclick="setBodyShapePreset(${i},'8px 8px 8px 8px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Yuvarlak</button>
+        <button onclick="setBodyShapePreset(${i},'0px 0px 12px 12px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Alt Yuvarlak</button>
+        <button onclick="setBodyShapePreset(${i},'12px 12px 0px 0px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Üst Yuvarlak</button>
+        <button onclick="setBodyShapePreset(${i},'20px 20px 20px 20px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Çok Yuvarlak</button>
+      </div>
+    </div>
+    <div class="adv-item"><label>Etiket Şekli</label><select onchange="updateTierField(${i},'tagShape',this.value)"><option value="2px" ${(t.tagShape || '2px') === '2px' ? 'selected' : ''}>Varsayılan</option><option value="0px" ${t.tagShape === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.tagShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.tagShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="50px" ${t.tagShape === '50px' ? 'selected' : ''}>Hap</option><option value="50%" ${t.tagShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
+    <!-- COMPACT MOD -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.compactMode ? 'checked' : ''} onchange="updateTierField(${i},'compactMode',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;↔ Compact Mod (Yatay Scroll, Tek Satır)
+      </label>
+    </div>
+    <!-- GRID MOD -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.gridMode ? 'checked' : ''} onchange="updateTierField(${i},'gridMode',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;⊞ Grid Modu
+      </label>
+    </div>
+    ${t.gridMode ? `<div class="adv-item adv-full-col"><label>Sütun Sayısı — ${t.gridCols || 4}</label><input type="range" min="2" max="10" step="1" value="${t.gridCols || 4}" oninput="updateTierField(${i},'gridCols',parseFloat(this.value));this.previousElementSibling.textContent='Sütun Sayısı — '+this.value"></div>` : ''}
+    <!-- AYRAÇ -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label>🔲 Katman Altı Ayraç</label>
+      <select onchange="updateTierField(${i},'dividerStyle',this.value)" style="width:100%;margin-top:0.2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.65rem;padding:0.2rem 0.4rem;border-radius:2px;outline:none;">
+        <option value="none" ${(t.dividerStyle || 'none') === 'none' ? 'selected' : ''}>Yok</option>
+        <option value="line" ${t.dividerStyle === 'line' ? 'selected' : ''}>İnce Çizgi</option>
+        <option value="gradient" ${t.dividerStyle === 'gradient' ? 'selected' : ''}>Gradient Çizgi</option>
+        <option value="band" ${t.dividerStyle === 'band' ? 'selected' : ''}>Görsel Bant</option>
+        <option value="gap" ${t.dividerStyle === 'gap' ? 'selected' : ''}>Büyük Boşluk</option>
+      </select>
+    </div>
+    <!-- RENK YANSITMA -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.bodyColorReflect ? 'checked' : ''} onchange="updateTierField(${i},'bodyColorReflect',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;🎨 Katman Rengi Body'ye Yansısın
+      </label>
+    </div>
+    <!-- SIRALAMA YÖNÜ -->
+    <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
+      <label>↔ İçerik Hizalaması</label>
+      <select onchange="updateTierField(${i},'bodyJustify',this.value)" style="width:100%;margin-top:0.2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.65rem;padding:0.2rem 0.4rem;border-radius:2px;outline:none;">
+        <option value="flex-start" ${(t.bodyJustify || 'flex-start') === 'flex-start' ? 'selected' : ''}>Soldan Başla</option>
+        <option value="flex-end" ${t.bodyJustify === 'flex-end' ? 'selected' : ''}>Sağdan Başla</option>
+        <option value="center" ${t.bodyJustify === 'center' ? 'selected' : ''}>Ortadan Başla</option>
+        <option value="space-between" ${t.bodyJustify === 'space-between' ? 'selected' : ''}>Eşit Dağıt</option>
+        <option value="space-around" ${t.bodyJustify === 'space-around' ? 'selected' : ''}>Etrafta Dağıt</option>
+      </select>
+    </div>
+    <div class="adv-item"><label>Sol Dolgu — ${t.bodyPaddingLeft || 0}px</label><input type="range" min="0" max="200" step="4" value="${t.bodyPaddingLeft || 0}" oninput="updateTierField(${i},'bodyPaddingLeft',parseFloat(this.value));this.previousElementSibling.textContent='Sol Dolgu — '+this.value+'px'"></div>
+    <div class="adv-item"><label>Sağ Dolgu — ${t.bodyPaddingRight || 0}px</label><input type="range" min="0" max="200" step="4" value="${t.bodyPaddingRight || 0}" oninput="updateTierField(${i},'bodyPaddingRight',parseFloat(this.value));this.previousElementSibling.textContent='Sağ Dolgu — '+this.value+'px'"></div>
+  `;
+}
+
+/**
+ * Tier gelişmiş ayarları için General tab HTML'ini döndürür.
+ * @param {object} t - Tier nesnesi
+ * @param {number} i - Tier dizin numarası
+ * @returns {string}
+ */
+function buildGeneralTab(t, i) {
+  return `
+    <div class="adv-item"><label>Kenarlık Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.borderColor || '#1f1f35'}" oninput="updateTierField(${i},'borderColor',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'borderColor','')">Temizle</button></div></div>
+    <div class="adv-item"><label>Köşe Yuvarlaklığı — ${t.tierBorderRadius || 4}px</label><input type="range" min="0" max="24" value="${t.tierBorderRadius || 4}" oninput="updateTierField(${i},'tierBorderRadius',parseFloat(this.value));this.previousElementSibling.textContent='Köşe Yuvarlaklığı — '+this.value+'px'"></div>
+  `;
+}
+
+/**
+ * Tier gelişmiş ayarları için Layout tab HTML'ini döndürür.
+ * Serbest konumlandırma (freeLayout) ve canvas boyutu ayarları içerir.
+ * @param {object} t - Tier nesnesi
+ * @param {number} i - Tier dizin numarası
+ * @returns {string}
+ */
+function buildLayoutTab(t, i) {
+  return `
+    <div class="adv-item adv-full-col" style="border-bottom:1px solid var(--border);padding-bottom:0.6rem;margin-bottom:0.4rem;">
+      <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+        <input type="checkbox" ${t.freeLayout ? 'checked' : ''}
+          onchange="updateTierField(${i},'freeLayout',this.checked)"
+          style="accent-color:var(--accent);width:12px;height:12px;">
+        &nbsp;🗺 Serbest Konumlandırma
+      </label>
+      <div style="font-size:0.48rem;color:var(--muted);margin-top:0.25rem;opacity:0.7;">
+        Aktifken tier wrapper'ına data-freelayout attribute eklenir. Normal layout korunur.
+      </div>
+    </div>
+    ${t.freeLayout ? `
+    <div class="adv-item"><label>Canvas Genişliği — ${t.canvasW || 900}px</label>
+      <input type="range" min="400" max="2400" step="50" value="${t.canvasW || 900}"
+        oninput="updateTierField(${i},'canvasW',parseFloat(this.value));this.previousElementSibling.textContent='Canvas Genişliği — '+this.value+'px'">
+    </div>
+    <div class="adv-item"><label>Canvas Yüksekliği — ${t.canvasH || 300}px</label>
+      <input type="range" min="100" max="1200" step="20" value="${t.canvasH || 300}"
+        oninput="updateTierField(${i},'canvasH',parseFloat(this.value));this.previousElementSibling.textContent='Canvas Yüksekliği — '+this.value+'px'">
+    </div>
+    <div class="adv-item adv-full-col" style="margin-top:0.4rem;">
+      <button
+        onclick="showInfo('Yakında','Yakında: Sürükle-bırak editör')"
+        style="width:100%;background:var(--surface);border:1px solid var(--accent);color:var(--accent);font-family:inherit;font-size:0.62rem;padding:0.4rem 0.8rem;border-radius:3px;cursor:pointer;letter-spacing:0.06em;transition:opacity 0.15s;">
+        ✏ Editörü Aç
+      </button>
+    </div>` : `
+    <div style="font-size:0.58rem;color:var(--muted);opacity:0.5;text-align:center;padding:0.8rem 0;">
+      Serbest konumlandırmayı etkinleştir ve editörü kullan.
+    </div>`}
+  `;
+}
+
+// ─────────────────────────────────────────
 //  CUSTOM TIER BUILDER
 // ─────────────────────────────────────────
+/** Özel katman listesini (emoji, isim, renk, gelişmiş ayarlar) render eder. */
 function renderCustomTierBuilder() {
   const l = getList(AppState.settingsListId); if (!l) return;
   const c = document.getElementById('custom-tier-builder'); if (!c) return;
@@ -921,42 +1104,10 @@ function renderCustomTierBuilder() {
   }
 
   (l.customTiers || []).forEach((t, i) => {
-    // Migration
-    if (t.headerBannerImg === undefined)        t.headerBannerImg = t.bannerImg || null;
-    if (t.headerBannerFull === undefined)       t.headerBannerFull = false;
-    if (t.headerBannerFit === undefined)        t.headerBannerFit = t.bannerFit || 'cover';
-    if (t.headerBannerSaturation === undefined) t.headerBannerSaturation = 100;
-    if (t.headerBannerBrightness === undefined) t.headerBannerBrightness = t.bannerBrightness || 100;
-    if (t.headerBannerBlur === undefined)       t.headerBannerBlur = t.bannerBlur || 0;
-    if (t.bodyBannerImg === undefined)          t.bodyBannerImg = null;
-    if (t.bodyBannerFit === undefined)          t.bodyBannerFit = 'cover';
-    if (t.bodyBannerBlur === undefined)         t.bodyBannerBlur = 0;
-    if (t.bodyBannerBrightness === undefined)   t.bodyBannerBrightness = 100;
-    if (t.bodyBannerOpacity === undefined)      t.bodyBannerOpacity = 40;
-    if (t.bodyShape === undefined)              t.bodyShape = '0px 0px 4px 4px';
-    if (t.headerShape === undefined)            t.headerShape = '0px';
-    if (t.tagShape === undefined)               t.tagShape = '2px';
-    if (t.bodyMinHeight === undefined)          t.bodyMinHeight = 48;
-    if (t.tagGap === undefined)                 t.tagGap = 5;
-    if (t.borderOpacity === undefined)          t.borderOpacity = 100;
-    if (t.headerMinWidth === undefined)         t.headerMinWidth = 0;
-    if (t.hidden === undefined)                 t.hidden = false;  // YENİ
-    // Yeni özellikler migration
-    if (t.headerGradientEnabled === undefined)  t.headerGradientEnabled = false;
-    if (t.headerGradientColor1 === undefined)   t.headerGradientColor1 = '#7c3aed';
-    if (t.headerGradientColor2 === undefined)   t.headerGradientColor2 = '#2563eb';
-    if (t.headerGradientAngle === undefined)    t.headerGradientAngle = 135;
-    if (t.headerCountEnabled === undefined)     t.headerCountEnabled = false;
-    if (t.compactMode === undefined)            t.compactMode = false;
-    if (t.headerGlowEnabled === undefined)      t.headerGlowEnabled = false;
-    if (t.headerGlowIntensity === undefined)    t.headerGlowIntensity = 8;
-    if (t.dividerStyle === undefined)           t.dividerStyle = 'none';
-    if (t.bodyColorReflect === undefined)       t.bodyColorReflect = false;
-    if (t.bodyJustify === undefined)            t.bodyJustify = 'flex-start';
-    if (t.bodyPaddingLeft === undefined)        t.bodyPaddingLeft = 0;
-    if (t.bodyPaddingRight === undefined)       t.bodyPaddingRight = 0;
-    if (t.gridMode === undefined)               t.gridMode = false;
-    if (t.gridCols === undefined)               t.gridCols = 4;
+    // Migration render sırasında değil, loadData'da yapılıyor.
+    // Ancak addCustomTier ile yeni eklenen tier'larda eksik alan olabilir;
+    // bu yüzden sadece undefined kontrolü yaparak varsayılan ataması yapılır.
+    // (Tam migration storage.js → migrateTier'da.)
 
     const isAdvOpen = t._advOpen || false;
     const activeTab = t._advTab  || 'header';
@@ -998,168 +1149,40 @@ function renderCustomTierBuilder() {
     if (isAdvOpen) {
       const advWrap = document.createElement('div');
       advWrap.style.cssText = 'margin-top:0.7rem;padding:0.8rem;background:rgba(0,0,0,0.25);border-radius:4px;border:1px solid var(--border);';
+
       const tabsEl = document.createElement('div'); tabsEl.className = 'adv-tabs';
       tabsEl.innerHTML = `
-        <button class="adv-tab-btn ${activeTab === 'header' ? 'active' : ''}" onclick="setAdvTab(${i},'header')">🎴 Header</button>
-        <button class="adv-tab-btn ${activeTab === 'body'   ? 'active' : ''}" onclick="setAdvTab(${i},'body')">📦 Gövde</button>
-        <button class="adv-tab-btn ${activeTab === 'general'? 'active' : ''}" onclick="setAdvTab(${i},'general')">⚙ Genel</button>
+        <button class="adv-tab-btn ${activeTab === 'header'  ? 'active' : ''}" onclick="setAdvTab(${i},'header')">🎴 Header</button>
+        <button class="adv-tab-btn ${activeTab === 'body'    ? 'active' : ''}" onclick="setAdvTab(${i},'body')">📦 Gövde</button>
+        <button class="adv-tab-btn ${activeTab === 'general' ? 'active' : ''}" onclick="setAdvTab(${i},'general')">⚙ Genel</button>
+        <button class="adv-tab-btn ${activeTab === 'layout'  ? 'active' : ''}" onclick="setAdvTab(${i},'layout')">🗺 Layout</button>
       `;
       advWrap.appendChild(tabsEl);
 
       // HEADER TAB
       const headerPanel = document.createElement('div');
       headerPanel.className = 'adv-tab-panel' + (activeTab === 'header' ? ' active' : '');
-      headerPanel.innerHTML = `
-        <div class="adv-item adv-full-col"><label>Header Banner URL</label>
-          <div class="adv-url-row">
-            <input type="text" value="${escHtml(t.headerBannerImg || '')}" placeholder="https://..." oninput="updateTierField(${i},'headerBannerImg',this.value)">
-            ${t.headerBannerImg ? `<img class="adv-banner-prev" src="${t.headerBannerImg}" onerror="this.style.display='none'">` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}
-          </div>
-        </div>
-        <div class="adv-item adv-full-col"><label><input type="checkbox" ${t.headerBannerFull ? 'checked' : ''} onchange="updateTierField(${i},'headerBannerFull',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;"> &nbsp;Banner tüm header'ı kaplasın</label></div>
-        <div class="adv-item"><label>Header Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.headerBg || '#0e0e1a'}" oninput="updateTierField(${i},'headerBg',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'headerBg','')">Temizle</button></div></div>
-        <div class="adv-item"><label>Banner Sığdırma</label><select onchange="updateTierField(${i},'headerBannerFit',this.value)"><option value="cover" ${t.headerBannerFit === 'cover' ? 'selected' : ''}>Cover</option><option value="contain" ${t.headerBannerFit === 'contain' ? 'selected' : ''}>Contain</option><option value="fill" ${t.headerBannerFit === 'fill' ? 'selected' : ''}>Fill</option></select></div>
-        <div class="adv-item"><label>Yükseklik — ${t.headerHeight || 45}px</label><input type="range" min="30" max="200" value="${t.headerHeight || 45}" oninput="updateTierField(${i},'headerHeight',parseFloat(this.value));this.previousElementSibling.textContent='Yükseklik — '+this.value+'px'"></div>
-        <div class="adv-item"><label>Genişlik — ${t.headerMinWidth || 0}%</label><input type="range" min="0" max="100" value="${t.headerMinWidth || 0}" oninput="updateTierField(${i},'headerMinWidth',parseFloat(this.value));this.previousElementSibling.textContent='Genişlik — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Doygunluk — ${t.headerBannerSaturation || 100}%</label><input type="range" min="0" max="200" value="${t.headerBannerSaturation || 100}" oninput="updateTierField(${i},'headerBannerSaturation',parseFloat(this.value));this.previousElementSibling.textContent='Doygunluk — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Parlaklık — ${t.headerBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="${t.headerBannerBrightness || 100}" oninput="updateTierField(${i},'headerBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Blur — ${t.headerBannerBlur || 0}px</label><input type="range" min="0" max="20" value="${t.headerBannerBlur || 0}" oninput="updateTierField(${i},'headerBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
-        <div class="adv-item"><label>Hizalama</label><select onchange="updateTierField(${i},'headerAlign',this.value)"><option value="flex-start" ${(t.headerAlign || 'flex-start') === 'flex-start' ? 'selected' : ''}>Sol</option><option value="center" ${t.headerAlign === 'center' ? 'selected' : ''}>Orta</option><option value="flex-end" ${t.headerAlign === 'flex-end' ? 'selected' : ''}>Sağ</option></select></div>
-        <div class="adv-item"><label>Header Şekli</label><select onchange="updateTierField(${i},'headerShape',this.value)"><option value="0px" ${(t.headerShape || '0px') === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.headerShape === '4px' ? 'selected' : ''}>Hafif Yuvarlak</option><option value="8px" ${t.headerShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="12px" ${t.headerShape === '12px' ? 'selected' : ''}>Çok Yuvarlak</option><option value="50%" ${t.headerShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
-        <div class="adv-item"><label>Yazı Boyutu — ${t.nameFontSize || 0.72}rem</label><input type="range" min="0.5" max="1.5" step="0.05" value="${t.nameFontSize || 0.72}" oninput="updateTierField(${i},'nameFontSize',parseFloat(this.value));this.previousElementSibling.textContent='Yazı Boyutu — '+parseFloat(this.value).toFixed(2)+'rem'"></div>
-        <!-- GRADIENT -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
-            <input type="checkbox" ${t.headerGradientEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerGradientEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
-            &nbsp;🎨 Gradient Header
-          </label>
-        </div>
-        ${t.headerGradientEnabled ? `
-        <div class="adv-item"><label>Renk 1</label><input type="color" value="${t.headerGradientColor1 || '#7c3aed'}" oninput="updateTierField(${i},'headerGradientColor1',this.value)"></div>
-        <div class="adv-item"><label>Renk 2</label><input type="color" value="${t.headerGradientColor2 || '#2563eb'}" oninput="updateTierField(${i},'headerGradientColor2',this.value)"></div>
-        <div class="adv-item adv-full-col"><label>Açı — ${t.headerGradientAngle || 135}°</label><input type="range" min="0" max="360" value="${t.headerGradientAngle || 135}" oninput="updateTierField(${i},'headerGradientAngle',parseFloat(this.value));this.previousElementSibling.textContent='Açı — '+this.value+'°'"></div>
-        <div class="adv-item adv-full-col" style="font-size:0.48rem;color:var(--muted);display:flex;gap:0.4rem;flex-wrap:wrap;">
-          <button onclick="updateTierField(${i},'headerGradientColor1','#7c3aed');updateTierField(${i},'headerGradientColor2','#2563eb')" style="background:linear-gradient(135deg,#7c3aed,#2563eb);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Mor→Mavi</button>
-          <button onclick="updateTierField(${i},'headerGradientColor1','#f97316');updateTierField(${i},'headerGradientColor2','#dc2626')" style="background:linear-gradient(135deg,#f97316,#dc2626);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Turuncu→Kırmızı</button>
-          <button onclick="updateTierField(${i},'headerGradientColor1','#06b6d4');updateTierField(${i},'headerGradientColor2','#6366f1')" style="background:linear-gradient(135deg,#06b6d4,#6366f1);border:none;color:#fff;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Cyan→İndigo</button>
-          <button onclick="updateTierField(${i},'headerGradientColor1','#10b981');updateTierField(${i},'headerGradientColor2','#fbbf24')" style="background:linear-gradient(135deg,#10b981,#fbbf24);border:none;color:#000;font-size:0.48rem;padding:0.2rem 0.5rem;border-radius:2px;cursor:pointer;">Yeşil→Sarı</button>
-        </div>` : ''}
-        <!-- SAYAÇ -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
-            <input type="checkbox" ${t.headerCountEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerCountEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
-            &nbsp;🔢 Header'da Anime Sayısı
-          </label>
-        </div>
-        <!-- GLOW -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
-            <input type="checkbox" ${t.headerGlowEnabled ? 'checked' : ''} onchange="updateTierField(${i},'headerGlowEnabled',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
-            &nbsp;✨ İsim Glow Efekti
-          </label>
-        </div>
-        ${t.headerGlowEnabled ? `
-        <div class="adv-item adv-full-col"><label>Glow Yoğunluğu — ${t.headerGlowIntensity || 8}px</label><input type="range" min="1" max="30" value="${t.headerGlowIntensity || 8}" oninput="updateTierField(${i},'headerGlowIntensity',parseFloat(this.value));this.previousElementSibling.textContent='Glow Yoğunluğu — '+this.value+'px'"></div>` : ''}
-      `;
+      headerPanel.innerHTML = buildHeaderTab(t, i);
       advWrap.appendChild(headerPanel);
 
       // BODY TAB
       const bodyPanel = document.createElement('div');
       bodyPanel.className = 'adv-tab-panel' + (activeTab === 'body' ? ' active' : '');
-      bodyPanel.innerHTML = `
-        <div class="adv-item adv-full-col"><label>Gövde Banner URL</label><div class="adv-url-row"><input type="text" value="${escHtml(t.bodyBannerImg || '')}" placeholder="https://..." oninput="updateTierField(${i},'bodyBannerImg',this.value)">${t.bodyBannerImg ? `<img class="adv-banner-prev" src="${t.bodyBannerImg}" onerror="this.style.display='none'">` : '<span style="font-size:0.5rem;color:var(--muted);flex-shrink:0;opacity:0.4">Yok</span>'}</div></div>
-        <div class="adv-item"><label>Gövde Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.bodyBg || '#131320'}" oninput="updateTierField(${i},'bodyBg',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'bodyBg','')">Temizle</button></div></div>
-        <div class="adv-item"><label>Banner Sığdırma</label><select onchange="updateTierField(${i},'bodyBannerFit',this.value)"><option value="cover" ${(t.bodyBannerFit || 'cover') === 'cover' ? 'selected' : ''}>Cover</option><option value="contain" ${t.bodyBannerFit === 'contain' ? 'selected' : ''}>Contain</option><option value="repeat" ${t.bodyBannerFit === 'repeat' ? 'selected' : ''}>Tekrarla</option></select></div>
-        <div class="adv-item"><label>Banner Opaklığı — ${t.bodyBannerOpacity || 40}%</label><input type="range" min="5" max="100" value="${t.bodyBannerOpacity || 40}" oninput="updateTierField(${i},'bodyBannerOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Banner Opaklığı — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Parlaklık — ${t.bodyBannerBrightness || 100}%</label><input type="range" min="20" max="200" value="${t.bodyBannerBrightness || 100}" oninput="updateTierField(${i},'bodyBannerBrightness',parseFloat(this.value));this.previousElementSibling.textContent='Parlaklık — '+this.value+'%'"></div>
-        <div class="adv-item"><label>Blur — ${t.bodyBannerBlur || 0}px</label><input type="range" min="0" max="20" value="${t.bodyBannerBlur || 0}" oninput="updateTierField(${i},'bodyBannerBlur',parseFloat(this.value));this.previousElementSibling.textContent='Blur — '+this.value+'px'"></div>
-        <div class="adv-item"><label>Min Yükseklik — ${t.bodyMinHeight || 48}px</label><input type="range" min="20" max="300" value="${t.bodyMinHeight || 48}" oninput="updateTierField(${i},'bodyMinHeight',parseFloat(this.value));this.previousElementSibling.textContent='Min Yükseklik — '+this.value+'px'"></div>
-        <div class="adv-item"><label>Etiket Boşluğu — ${t.tagGap || 5}px</label><input type="range" min="0" max="24" value="${t.tagGap || 5}" oninput="updateTierField(${i},'tagGap',parseFloat(this.value));this.previousElementSibling.textContent='Etiket Boşluğu — '+this.value+'px'"></div>
-        <div class="adv-item"><label>Çizgi Şeffaflığı — ${t.borderOpacity !== undefined ? t.borderOpacity : 100}%</label><input type="range" min="0" max="100" value="${t.borderOpacity !== undefined ? t.borderOpacity : 100}" oninput="updateTierField(${i},'borderOpacity',parseFloat(this.value));this.previousElementSibling.textContent='Çizgi Şeffaflığı — '+this.value+'%'"></div>
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.6rem;margin-top:0.2rem;">
-          <label style="margin-bottom:0.4rem;display:block;">Gövde Şekli (border-radius)</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem 0.5rem;margin-bottom:0.4rem;">
-            ${['Sol Üst','Sağ Üst','Sağ Alt','Sol Alt'].map((lbl, ci) => {
-              const corners = (t.bodyShape || '0px 0px 0px 0px').split(/\s+/);
-              while (corners.length < 4) corners.push('0px');
-              const raw = parseInt(corners[ci]) || 0;
-              return `<div style="display:flex;flex-direction:column;gap:0.15rem;">
-                <span style="font-size:0.45rem;color:var(--muted);text-transform:uppercase;">${lbl}</span>
-                <div style="display:flex;align-items:center;gap:0.25rem;">
-                  <input type="range" min="0" max="50" value="${raw}" style="flex:1;"
-                    oninput="updateBodyShapeCorner(${i},${ci},this.value);this.nextElementSibling.textContent=this.value+'px'">
-                  <span style="font-size:0.5rem;color:var(--muted);min-width:26px;">${raw}px</span>
-                </div>
-              </div>`;
-            }).join('')}
-          </div>
-          <div style="display:flex;gap:0.3rem;flex-wrap:wrap;margin-top:0.2rem;">
-            <button onclick="setBodyShapePreset(${i},'0px 0px 0px 0px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Keskin</button>
-            <button onclick="setBodyShapePreset(${i},'4px 4px 4px 4px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Hafif</button>
-            <button onclick="setBodyShapePreset(${i},'8px 8px 8px 8px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Yuvarlak</button>
-            <button onclick="setBodyShapePreset(${i},'0px 0px 12px 12px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Alt Yuvarlak</button>
-            <button onclick="setBodyShapePreset(${i},'12px 12px 0px 0px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Üst Yuvarlak</button>
-            <button onclick="setBodyShapePreset(${i},'20px 20px 20px 20px')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.48rem;padding:0.18rem 0.5rem;border-radius:2px;cursor:pointer;">Çok Yuvarlak</button>
-          </div>
-        </div>
-        <div class="adv-item"><label>Etiket Şekli</label><select onchange="updateTierField(${i},'tagShape',this.value)"><option value="2px" ${(t.tagShape || '2px') === '2px' ? 'selected' : ''}>Varsayılan</option><option value="0px" ${t.tagShape === '0px' ? 'selected' : ''}>Keskin</option><option value="4px" ${t.tagShape === '4px' ? 'selected' : ''}>Hafif</option><option value="8px" ${t.tagShape === '8px' ? 'selected' : ''}>Yuvarlak</option><option value="50px" ${t.tagShape === '50px' ? 'selected' : ''}>Hap</option><option value="50%" ${t.tagShape === '50%' ? 'selected' : ''}>Tam Yuvarlak</option></select></div>
-        <!-- COMPACT MOD -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
-            <input type="checkbox" ${t.compactMode ? 'checked' : ''} onchange="updateTierField(${i},'compactMode',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
-            &nbsp;↔ Compact Mod (Yatay Scroll, Tek Satır)
-          </label>
-        </div>
-        <!-- GRID MOD -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
-            <input type="checkbox" ${t.gridMode ? 'checked' : ''} onchange="updateTierField(${i},'gridMode',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
-            &nbsp;⊞ Grid Modu
-          </label>
-        </div>
-        ${t.gridMode ? `<div class="adv-item adv-full-col"><label>Sütun Sayısı — ${t.gridCols || 4}</label><input type="range" min="2" max="10" step="1" value="${t.gridCols || 4}" oninput="updateTierField(${i},'gridCols',parseFloat(this.value));this.previousElementSibling.textContent='Sütun Sayısı — '+this.value"></div>` : ''}
-        <!-- AYRAÇ -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label>🔲 Katman Altı Ayraç</label>
-          <select onchange="updateTierField(${i},'dividerStyle',this.value)" style="width:100%;margin-top:0.2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.65rem;padding:0.2rem 0.4rem;border-radius:2px;outline:none;">
-            <option value="none" ${(t.dividerStyle || 'none') === 'none' ? 'selected' : ''}>Yok</option>
-            <option value="line" ${t.dividerStyle === 'line' ? 'selected' : ''}>İnce Çizgi</option>
-            <option value="gradient" ${t.dividerStyle === 'gradient' ? 'selected' : ''}>Gradient Çizgi</option>
-            <option value="band" ${t.dividerStyle === 'band' ? 'selected' : ''}>Görsel Bant</option>
-            <option value="gap" ${t.dividerStyle === 'gap' ? 'selected' : ''}>Büyük Boşluk</option>
-          </select>
-        </div>
-        <!-- RENK YANSITMA -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
-            <input type="checkbox" ${t.bodyColorReflect ? 'checked' : ''} onchange="updateTierField(${i},'bodyColorReflect',this.checked)" style="accent-color:var(--accent);width:12px;height:12px;">
-            &nbsp;🎨 Katman Rengi Body'ye Yansısın
-          </label>
-        </div>
-        <!-- SIRALAMA YÖNÜ -->
-        <div class="adv-item adv-full-col" style="border-top:1px solid var(--border);padding-top:0.5rem;margin-top:0.2rem;">
-          <label>↔ İçerik Hizalaması</label>
-          <select onchange="updateTierField(${i},'bodyJustify',this.value)" style="width:100%;margin-top:0.2rem;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:0.65rem;padding:0.2rem 0.4rem;border-radius:2px;outline:none;">
-            <option value="flex-start" ${(t.bodyJustify || 'flex-start') === 'flex-start' ? 'selected' : ''}>Soldan Başla</option>
-            <option value="flex-end" ${t.bodyJustify === 'flex-end' ? 'selected' : ''}>Sağdan Başla</option>
-            <option value="center" ${t.bodyJustify === 'center' ? 'selected' : ''}>Ortadan Başla</option>
-            <option value="space-between" ${t.bodyJustify === 'space-between' ? 'selected' : ''}>Eşit Dağıt</option>
-            <option value="space-around" ${t.bodyJustify === 'space-around' ? 'selected' : ''}>Etrafta Dağıt</option>
-          </select>
-        </div>
-        <div class="adv-item"><label>Sol Dolgu — ${t.bodyPaddingLeft || 0}px</label><input type="range" min="0" max="200" step="4" value="${t.bodyPaddingLeft || 0}" oninput="updateTierField(${i},'bodyPaddingLeft',parseFloat(this.value));this.previousElementSibling.textContent='Sol Dolgu — '+this.value+'px'"></div>
-        <div class="adv-item"><label>Sağ Dolgu — ${t.bodyPaddingRight || 0}px</label><input type="range" min="0" max="200" step="4" value="${t.bodyPaddingRight || 0}" oninput="updateTierField(${i},'bodyPaddingRight',parseFloat(this.value));this.previousElementSibling.textContent='Sağ Dolgu — '+this.value+'px'"></div>
-      `;
+      bodyPanel.innerHTML = buildBodyTab(t, i);
       advWrap.appendChild(bodyPanel);
 
       // GENERAL TAB
       const generalPanel = document.createElement('div');
       generalPanel.className = 'adv-tab-panel' + (activeTab === 'general' ? ' active' : '');
-      generalPanel.innerHTML = `
-        <div class="adv-item"><label>Kenarlık Rengi</label><div style="display:flex;gap:0.3rem;align-items:center;"><input type="color" value="${t.borderColor || '#1f1f35'}" oninput="updateTierField(${i},'borderColor',this.value)" style="flex:1;"><button class="adv-clear" onclick="updateTierField(${i},'borderColor','')">Temizle</button></div></div>
-        <div class="adv-item"><label>Köşe Yuvarlaklığı — ${t.tierBorderRadius || 4}px</label><input type="range" min="0" max="24" value="${t.tierBorderRadius || 4}" oninput="updateTierField(${i},'tierBorderRadius',parseFloat(this.value));this.previousElementSibling.textContent='Köşe Yuvarlaklığı — '+this.value+'px'"></div>
-      `;
+      generalPanel.innerHTML = buildGeneralTab(t, i);
       advWrap.appendChild(generalPanel);
+
+      // LAYOUT TAB
+      const layoutPanel = document.createElement('div');
+      layoutPanel.className = 'adv-tab-panel' + (activeTab === 'layout' ? ' active' : '');
+      layoutPanel.innerHTML = buildLayoutTab(t, i);
+      advWrap.appendChild(layoutPanel);
+
       item.appendChild(advWrap);
     }
 
@@ -1167,32 +1190,38 @@ function renderCustomTierBuilder() {
   });
 }
 
+/** Katmanın görünürlüğünü tersine çevirir. */
 function toggleTierVisibility(i) {
   const l = getList(AppState.settingsListId); if (!l) return;
   l.customTiers[i].hidden = !l.customTiers[i].hidden;
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+/** Tier gelişmiş ayarlar aktif tabını değiştirir. */
 function setAdvTab(i, tab) {
   const l = getList(AppState.settingsListId); if (!l) return;
   l.customTiers[i]._advTab = tab; renderCustomTierBuilder();
 }
 
+/** Tier gelişmiş ayarlar panelini açıp kapatır. */
 function toggleAdvTier(i) {
   const l = getList(AppState.settingsListId); if (!l) return;
   l.customTiers[i]._advOpen = !l.customTiers[i]._advOpen; renderCustomTierBuilder();
 }
 
+/** Tier alanını günceller; sayısal anahtarlar için parseFloat uygular. */
 function updateTierField(i, key, val) {
   const l = getList(AppState.settingsListId); if (!l) return;
   const numericKeys = ['headerHeight','nameFontSize','tierBorderRadius','bannerBlur','bannerBrightness',
     'bodyBannerBlur','bodyBannerBrightness','bodyBannerOpacity','headerBannerSaturation',
     'bodyMinHeight','tagGap','borderOpacity','headerMinWidth',
-    'headerGradientAngle','headerGlowIntensity','bodyPaddingLeft','bodyPaddingRight','gridCols'];
+    'headerGradientAngle','headerGlowIntensity','bodyPaddingLeft','bodyPaddingRight','gridCols',
+    'canvasW','canvasH'];
   if (numericKeys.includes(key)) val = parseFloat(val);
   l.customTiers[i][key] = val; saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+/** Gövde şeklinin belirtilen köşesini günceller. */
 function updateBodyShapeCorner(tierIdx, cornerIdx, value) {
   const l = getList(AppState.settingsListId); if (!l) return;
   const t = l.customTiers[tierIdx]; if (!t) return;
@@ -1203,12 +1232,14 @@ function updateBodyShapeCorner(tierIdx, cornerIdx, value) {
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+/** Gövde şeklini preset değeriyle ayarlar. */
 function setBodyShapePreset(tierIdx, value) {
   const l = getList(AppState.settingsListId); if (!l) return;
   if (l.customTiers[tierIdx]) l.customTiers[tierIdx].bodyShape = value;
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+/** Tier'ı listede yukarı veya aşağı taşır. */
 function moveTier(i, dir) {
   const l = getList(AppState.settingsListId); if (!l) return;
   const tiers = l.customTiers, j = i + dir;
@@ -1223,6 +1254,7 @@ function moveTier(i, dir) {
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+/** Yeni özel katman ekler. */
 function addCustomTier() {
   const l = getList(AppState.settingsListId); if (!l) return;
   l.customTiers.push({
@@ -1237,7 +1269,6 @@ function addCustomTier() {
     headerMinWidth: 0, nameFontSize: 0.72, borderColor: '', tierBorderRadius: 4,
     bannerImg: null, bannerMode: 'header', bannerFit: 'cover',
     bannerBlur: 0, bannerBrightness: 100, hidden: false,
-    // Yeni özellikler
     headerGradientEnabled: false, headerGradientColor1: '#7c3aed', headerGradientColor2: '#2563eb', headerGradientAngle: 135,
     headerCountEnabled: false,
     compactMode: false,
@@ -1246,10 +1277,15 @@ function addCustomTier() {
     bodyColorReflect: false,
     bodyJustify: 'flex-start', bodyPaddingLeft: 0, bodyPaddingRight: 0,
     gridMode: false, gridCols: 4,
+    // Serbest konumlandırma
+    freeLayout: false, canvasW: 900, canvasH: 300,
+    headerBox: { x: 0, y: 0, w: 900, h: 60 },
+    bodyBox:   { x: 0, y: 60, w: 900, h: 240 },
   });
   saveData(); renderCustomTierBuilder(); renderTierPage();
 }
 
+/** Katmanı siler ve ilgili entry referanslarını temizler. */
 function deleteTier(i) {
   showConfirm('Katmanı Sil', 'Bu katmanı silmek istiyor musun?', () => {
     const l = getList(AppState.settingsListId); if (!l) return;
@@ -1263,6 +1299,7 @@ function deleteTier(i) {
 // ─────────────────────────────────────────
 //  IMPORT / EXPORT
 // ─────────────────────────────────────────
+/** Tüm listeleri JSON olarak dışa aktarır. */
 function exportJSON() {
   const data = JSON.stringify(lists, null, 2);
   const blob  = new Blob([data], { type: 'application/json' });
@@ -1274,6 +1311,7 @@ function exportJSON() {
   showInfo('Export Tamam', 'Tüm listeler JSON olarak indirildi.');
 }
 
+/** JSON dosyasından liste verilerini içe aktarır. */
 function importJSON(event) {
   const file = event.target.files[0]; if (!file) return;
   const inputEl = event.target;
@@ -1291,6 +1329,7 @@ function importJSON(event) {
           if (!l.entries)       l.entries = [];
           if (!l.starTierOrder) l.starTierOrder = [5,4,3,2,1];
           if (!l.customFields)  l.customFields = [];
+          l.customTiers.forEach(t => migrateTier(t));
         });
         saveData(true);
         AppState.activeListId = lists[0]?.id || 'main';
@@ -1304,6 +1343,7 @@ function importJSON(event) {
   });
 }
 
+/** Seçili listeyi okunabilir metin formatında dışa aktarır. */
 function exportReadable() {
   const l = getList(AppState.settingsListId); if (!l) { showInfo('Hata', 'Önce bir liste seç.'); return; }
   const lines = ['# ' + l.name + ' — Anime Liste Export', '# Tarih: ' + new Date().toLocaleDateString('tr-TR'), '# Toplam: ' + l.entries.length + ' anime', ''];
@@ -1315,7 +1355,6 @@ function exportReadable() {
     if (e.tagColor) lines.push('Renk: ' + e.tagColor);
     if (e.img) lines.push('Görsel URL: ' + e.img);
     lines.push('Açıklama: ' + (e.desc || '').replace(/\n/g, ' '));
-    // Custom fields
     if (l.customFields && e.customFieldValues) {
       l.customFields.forEach(cf => {
         const val = e.customFieldValues[cf.id];
@@ -1333,6 +1372,7 @@ function exportReadable() {
   showInfo('Export Tamam', l.entries.length + ' anime düzenli olarak indirildi.');
 }
 
+/** Okunabilir metin formatındaki dosyadan entry'leri içe aktarır. */
 function importReadable(event) {
   const file = event.target.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -1360,6 +1400,7 @@ function importReadable(event) {
   reader.readAsText(file); event.target.value = '';
 }
 
+/** Tüm verileri sıfırlamak için onay ister. */
 function factoryReset() {
   showConfirm('⚠ Tüm Verileri Sıfırla', 'Tüm listeler, animeler, katmanlar ve ayarlar kalıcı olarak silinecek. Emin misin?', () => {
     localStorage.removeItem('al2-lists'); location.reload();

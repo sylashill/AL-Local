@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────
 //  TOP NAV
 // ─────────────────────────────────────────
+/** Üst navigasyon sekmelerini render eder. */
 function renderTopNav() {
   const nav = document.getElementById('top-nav');
   if (!nav) return;
@@ -40,6 +41,7 @@ function renderTopNav() {
 // ─────────────────────────────────────────
 //  ARAMA / SIRALAMA BARINI RENDER ET
 // ─────────────────────────────────────────
+/** Arama ve sıralama çubuğunu render eder ya da varsa kaldırıp yeniden oluşturur. */
 function renderSearchBar() {
   const existing = document.getElementById('search-sort-bar');
   if (existing) existing.remove();
@@ -111,7 +113,7 @@ function renderSearchBar() {
   inp.addEventListener('input', () => {
     AppState.filterQuery = inp.value;
     clearBtn.classList.toggle('visible', !!inp.value);
-    renderTierPage(false); // bar'ı yeniden oluşturma
+    renderTierPage(false);
   });
 
   clearBtn.addEventListener('click', () => {
@@ -134,6 +136,7 @@ function renderSearchBar() {
 // ─────────────────────────────────────────
 //  TIER LAYOUT
 // ─────────────────────────────────────────
+/** Tier sırasını listedeki durumla senkronize eder; eksik girişleri ekler, silinenleri çıkarır. */
 function syncTierLayout(l) {
   if (!l.tierLayout) l.tierLayout = [];
   let changed = false;
@@ -157,6 +160,7 @@ function syncTierLayout(l) {
   if (changed || l.tierLayout.length !== oldLen) saveData();
 }
 
+/** Listedeki tier'ları görüntüleme sırasına göre döndürür. */
 function getOrderedTiers(l) {
   if (!l) return [];
   if (l.id !== 'main')
@@ -169,6 +173,7 @@ function getOrderedTiers(l) {
   }).filter(Boolean);
 }
 
+/** Belirtilen tier'ı listede yukarı veya aşağı taşır. */
 function moveTierInList(listId, layoutIndex, dir) {
   const l = getList(listId); if (!l) return;
   const isMain = l.id === 'main';
@@ -185,6 +190,7 @@ function moveTierInList(listId, layoutIndex, dir) {
   saveData(); renderTierPage();
 }
 
+/** Tier taşıma butonu oluşturur. */
 function makeMoveBtn(text, title, onclick, hidden) {
   const btn = document.createElement('button');
   btn.className = 'tier-move-btn';
@@ -198,8 +204,35 @@ function makeMoveBtn(text, title, onclick, hidden) {
 }
 
 // ─────────────────────────────────────────
+//  ANİME TAG — FİLTRE STRING YARDIMCILARI
+// ─────────────────────────────────────────
+
+/**
+ * Entry'nin tag elementi için CSS filter string'ini oluşturur.
+ * Sadece tagSat 100'den farklıysa saturate filtresi döner; aksi halde boş string.
+ * @param {object} e - Entry nesnesi
+ * @returns {string}
+ */
+function buildTagFilterString(e) {
+  const tagSat = e.tagSat !== undefined ? e.tagSat : 100;
+  return tagSat !== 100 ? `saturate(${tagSat}%)` : '';
+}
+
+/**
+ * Entry'nin poster/img elementi için CSS filter string'ini oluşturur.
+ * Şu an için temel implementasyon; ileride parlaklık vb. eklenebilir.
+ * @param {object} e - Entry nesnesi
+ * @returns {string}
+ */
+function buildPosterFilterString(e) {
+  // Gelecekte poster'a özgü filtreler buraya eklenecek
+  return '';
+}
+
+// ─────────────────────────────────────────
 //  TIER PAGE RENDER
 // ─────────────────────────────────────────
+/** Ana tier sayfasını render eder; rebuildSearchBar=false ise arama çubuğunu yeniden oluşturmaz. */
 function renderTierPage(rebuildSearchBar = true) {
   const l = getList(AppState.activeListId);
   const c = document.getElementById('tiers-container');
@@ -216,10 +249,8 @@ function renderTierPage(rebuildSearchBar = true) {
     AppState._lastAppliedListId = AppState.activeListId;
   }
 
-  // Arama barını oluştur (veya yenile)
   if (rebuildSearchBar) renderSearchBar();
   else {
-    // sayacı güncelle
     const badge = document.getElementById('entry-count-badge');
     if (badge) {
       const total = l.entries.length;
@@ -230,7 +261,6 @@ function renderTierPage(rebuildSearchBar = true) {
     }
   }
 
-  // Sıralama modu
   const settings   = getSettings(AppState.activeListId);
   const sortMode   = settings.sortMode || 'added';
   const filterQ    = AppState.filterQuery;
@@ -242,9 +272,7 @@ function renderTierPage(rebuildSearchBar = true) {
 
   const sorted = sortEntries(l.entries, sortMode);
   sorted.forEach(e => {
-    // Filtre uygula
     if (!entryMatchesQuery(e, filterQ)) return;
-
     const s = getTier(e.score);
     if (byStarTier[s]) byStarTier[s].push(e);
     (e.customLayers || []).forEach(id => {
@@ -259,8 +287,6 @@ function renderTierPage(rebuildSearchBar = true) {
 
   orderedTiers.forEach((item, arrIdx) => {
     if (!item || !item.tier) return;
-
-    // Gizli katmanları atla
     if (item.tier.hidden) return;
 
     const tierIndex = isMain ? item.layoutIndex : arrIdx;
@@ -293,6 +319,9 @@ function renderTierPage(rebuildSearchBar = true) {
         ? `border-color:rgba(${hexToRgb(bColor)},${bOpacity});`
         : `border-color:rgba(31,31,53,${bOpacity});`;
       block.style.cssText = `position:relative; border-radius:${bRadius}px; ${borderStyle}`;
+
+      // Serbest konumlandırma attribute'u — ileride editör bu değeri okuyacak
+      if (t.freeLayout) block.dataset.freelayout = 'true';
 
       const hdr = document.createElement('div'); hdr.className = 'custom-tier-hdr';
       const hHeaderShape  = t.headerShape || '0px';
@@ -340,11 +369,9 @@ function renderTierPage(rebuildSearchBar = true) {
         hc += `<span class="custom-tier-emoji">${escHtml(t.emoji || '⭐')}</span>`;
       }
 
-      // Glow efekti
       const glowStyle = (t.headerGlowEnabled && t.color)
         ? `text-shadow:0 0 ${t.headerGlowIntensity || 8}px ${t.color}, 0 0 ${(t.headerGlowIntensity || 8) * 2}px ${t.color}80;`
         : '';
-      // Sayaç
       const tierEntries = byCustomTier[t.id] || [];
       const countBadge = t.headerCountEnabled
         ? `<span style="font-size:0.55rem;opacity:0.7;font-weight:700;background:${(t.color || '#888') + '22'};border:1px solid ${(t.color || '#888') + '50'};color:${t.color || '#888'};padding:0.1rem 0.4rem;border-radius:10px;flex-shrink:0;">${tierEntries.length}</span>`
@@ -353,7 +380,6 @@ function renderTierPage(rebuildSearchBar = true) {
       hdrContent.innerHTML = hc;
       hdr.appendChild(hdrContent);
 
-      // Gradient header (headerBg'yi override eder)
       if (t.headerGradientEnabled) {
         const g1 = t.headerGradientColor1 || '#7c3aed';
         const g2 = t.headerGradientColor2 || '#2563eb';
@@ -367,13 +393,10 @@ function renderTierPage(rebuildSearchBar = true) {
       const bodyShape  = t.bodyShape      || '0px';
       const bodyMinH   = t.bodyMinHeight  !== undefined ? t.bodyMinHeight : 48;
       const tagGapVal  = t.tagGap         !== undefined ? t.tagGap        : 5;
-      // bodyShape değeri "TL TR BR BL" formatında 4 değer içerebilir
-      // CSS border-radius: TL TR BR BL → gövde için sadece alt iki köşeyi değil tümünü kullan
       body.style.borderRadius = bodyShape;
       body.style.minHeight    = bodyMinH + 'px';
       body.style.gap          = tagGapVal + 'px';
 
-      // Compact mod
       if (t.compactMode) {
         body.style.flexWrap      = 'nowrap';
         body.style.overflowX     = 'auto';
@@ -381,20 +404,16 @@ function renderTierPage(rebuildSearchBar = true) {
         body.style.paddingBottom = '4px';
       }
 
-      // Grid mod
       if (t.gridMode && !t.compactMode) {
         body.style.display             = 'grid';
         body.style.gridTemplateColumns = `repeat(${t.gridCols || 4}, 1fr)`;
       } else {
-        // justify-content + padding
         body.style.justifyContent = t.bodyJustify || 'flex-start';
         body.style.paddingLeft    = (t.bodyPaddingLeft  || 0) + 'px';
         body.style.paddingRight   = (t.bodyPaddingRight || 0) + 'px';
       }
 
-      // Renk yansıtma
       if (t.bodyColorReflect && t.color) {
-        // hex → rgba dönüştür
         const rgb = hexToRgb(t.color);
         if (rgb && !t.bodyBannerImg) {
           body.style.backgroundColor = `rgba(${rgb},0.06)`;
@@ -433,7 +452,6 @@ function renderTierPage(rebuildSearchBar = true) {
       }
       block.appendChild(body); c.appendChild(block);
 
-      // Divider
       if (t.dividerStyle && t.dividerStyle !== 'none') {
         const dvd = document.createElement('div');
         const tierColor = t.color || '#888';
@@ -451,7 +469,6 @@ function renderTierPage(rebuildSearchBar = true) {
     }
   });
 
-  // Hiç sonuç yoksa filtre mesajı
   if (filterQ && !c.querySelector('.anime-tag')) {
     const msg = document.createElement('div');
     msg.style.cssText = 'text-align:center;color:var(--muted);font-size:0.65rem;padding:2rem;opacity:0.5;';
@@ -463,54 +480,23 @@ function renderTierPage(rebuildSearchBar = true) {
 // ─────────────────────────────────────────
 //  ANIME TAG
 // ─────────────────────────────────────────
+/** Anime tag DOM elementini oluşturur ve döndürür. */
 function buildTag(e, defaultColor, listId, shape) {
   const color = e.tagColor || defaultColor;
   const tag   = document.createElement('div'); tag.className = 'anime-tag';
-
-  // Renk: entry > katman rengi
-  const borderW = e.tagBorderWidth !== undefined ? e.tagBorderWidth : 1;
   tag.style.borderColor = color + '50';
   tag.style.color       = color + 'cc';
+  tag.style.background  = color + '0a';
 
-  // Arka plan: tagBgColor override varsa onu kullan, yoksa otomatik
-  if (e.tagBgColor) {
-    tag.style.background = e.tagBgColor;
-  } else {
-    tag.style.background = color + '0a';
-  }
-
-  // Kenarlık kalınlığı
-  if (borderW !== 1) tag.style.borderWidth = borderW + 'px';
-
-  // Şekil: entry override > tier tagShape > global CSS var
   const finalShape = e.tagShapeOverride || shape || null;
   if (finalShape) tag.style.borderRadius = finalShape;
 
-  // Boyut: entry > varsayılan
+  // Tag filter string
+  const tagFilter = buildTagFilterString(e);
+  if (tagFilter) tag.style.filter = tagFilter;
+
   const tagSize = e.tagSize !== undefined ? e.tagSize : 0.65;
   if (tagSize !== 0.65) tag.style.fontSize = tagSize + 'rem';
-
-  // Kalın / İtalik
-  if (e.tagBold)   tag.style.fontWeight = '700';
-  if (e.tagItalic) tag.style.fontStyle  = 'italic';
-
-  // Opacity
-  const tagOpacity = e.tagOpacity !== undefined ? e.tagOpacity : 100;
-  if (tagOpacity !== 100) tag.style.opacity = tagOpacity / 100;
-
-  // CSS filter: sat + bri + glow birleşimi
-  const tagSat  = e.tagSat !== undefined ? e.tagSat : 100;
-  const tagBri  = e.tagBri !== undefined ? e.tagBri : 100;
-  let filterStr = '';
-  if (tagSat !== 100) filterStr += `saturate(${tagSat}%) `;
-  if (tagBri !== 100) filterStr += `brightness(${tagBri}%) `;
-  if (filterStr.trim()) tag.style.filter = filterStr.trim();
-
-  // Glow efekti (box-shadow)
-  if (e.tagGlow) {
-    const gi = e.tagGlowIntensity !== undefined ? e.tagGlowIntensity : 6;
-    tag.style.boxShadow = `0 0 ${gi}px ${Math.round(gi/2)}px ${color}55`;
-  }
 
   tag.addEventListener('click', () => openDetail(e.id, listId));
 
@@ -518,53 +504,12 @@ function buildTag(e, defaultColor, listId, shape) {
     const wrap = document.createElement('div'); wrap.className = 'tag-img-wrap';
     if (finalShape) wrap.style.borderRadius = finalShape;
 
-    // Poster boyutu override
-    if (e.posterWidth  !== undefined) wrap.style.width  = e.posterWidth  + 'px';
-    if (e.posterHeight !== undefined) wrap.style.height = e.posterHeight + 'px';
+    // Poster filter string
+    const posterFilter = buildPosterFilterString(e);
+    if (posterFilter) wrap.style.filter = posterFilter;
 
     if (e.img) {
-      const img = document.createElement('img');
-      img.src = e.img; img.alt = escHtml(e.name);
-
-      // Poster kırpma/fit override
-      if (e.posterImgPos) img.style.objectPosition = e.posterImgPos;
-      if (e.posterImgFit) img.style.objectFit      = e.posterImgFit;
-
-      // Poster opacity
-      const pOpacity = e.posterOpacity !== undefined ? e.posterOpacity : 100;
-      if (pOpacity !== 100) img.style.opacity = pOpacity / 100;
-
-      // Poster CSS filter: blur + sat + bri + contrast + hue + sepia + invert
-      const pBlur     = e.posterBlur     !== undefined ? e.posterBlur     : 0;
-      const pSat      = e.posterSat      !== undefined ? e.posterSat      : 100;
-      const pBri      = e.posterBri      !== undefined ? e.posterBri      : 100;
-      const pContrast = e.posterContrast !== undefined ? e.posterContrast : 100;
-      const pHue      = e.posterHue      !== undefined ? e.posterHue      : 0;
-      let pFilter = '';
-      if (pBlur     !== 0)   pFilter += `blur(${pBlur}px) `;
-      if (pSat      !== 100) pFilter += `saturate(${pSat}%) `;
-      if (pBri      !== 100) pFilter += `brightness(${pBri}%) `;
-      if (pContrast !== 100) pFilter += `contrast(${pContrast}%) `;
-      if (pHue      !== 0)   pFilter += `hue-rotate(${pHue}deg) `;
-      if (e.posterSepia)     pFilter += 'sepia(1) ';
-      if (e.posterInvert)    pFilter += 'invert(1) ';
-      if (pFilter.trim()) img.style.filter = pFilter.trim();
-
-      wrap.appendChild(img);
-
-      // Poster overlay
-      if (e.posterOverlayColor) {
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-          position:absolute;inset:0;
-          background:${e.posterOverlayColor};
-          opacity:${(e.posterOverlayOpacity !== undefined ? e.posterOverlayOpacity : 20) / 100};
-          pointer-events:none;border-radius:inherit;
-        `;
-        wrap.style.position = 'relative';
-        wrap.appendChild(overlay);
-      }
-
+      const img = document.createElement('img'); img.src = e.img; img.alt = escHtml(e.name); wrap.appendChild(img);
     } else {
       wrap.innerHTML = `<div class="no-img-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>No Img</span></div>`;
     }
@@ -578,6 +523,7 @@ function buildTag(e, defaultColor, listId, shape) {
 // ─────────────────────────────────────────
 //  VIEW MODE
 // ─────────────────────────────────────────
+/** Görüntüleme modunu (metin/poster) değiştirir ve sayfayı yeniler. */
 function setView(mode) {
   AppState.viewMode = mode;
   document.getElementById('btn-text').classList.toggle('active', mode === 'text');
@@ -588,6 +534,7 @@ function setView(mode) {
 // ─────────────────────────────────────────
 //  CONFIRM / INFO DIALOG
 // ─────────────────────────────────────────
+/** Onay diyalogunu gösterir; kullanıcı "Evet" derse cb çağrılır. */
 function showConfirm(title, msg, cb) {
   AppState.confirmCb = cb;
   document.getElementById('confirm-title').textContent = title;
@@ -598,6 +545,7 @@ function showConfirm(title, msg, cb) {
   document.getElementById('confirm-overlay').classList.add('on');
 }
 
+/** Bilgi diyalogunu gösterir (yalnızca "Kapat" butonu). */
 function showInfo(title, msg) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-msg').textContent   = msg;
@@ -605,6 +553,7 @@ function showInfo(title, msg) {
   document.getElementById('confirm-overlay').classList.add('on');
 }
 
+/** Onay/bilgi diyalogunu kapatır. */
 function closeConfirm() {
   AppState.confirmCb = null;
   document.getElementById('confirm-overlay').classList.remove('on');
